@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class DeviceServiceImpl implements DeviceServiceSync {
+public class DeviceServiceSyncImpl implements DeviceServiceSync {
     private final DeviceRepository deviceRepository;
 
     private final DeviceMapper deviceMapper;

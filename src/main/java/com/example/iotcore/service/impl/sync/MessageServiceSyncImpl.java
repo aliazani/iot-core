@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class MessageServiceImpl implements MessageServiceSync {
+public class MessageServiceSyncImpl implements MessageServiceSync {
     private final MessageRepository messageRepository;
 
     private final MessageMapper messageMapper;

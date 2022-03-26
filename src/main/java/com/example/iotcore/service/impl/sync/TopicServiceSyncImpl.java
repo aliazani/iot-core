@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class TopicServiceImpl implements TopicServiceSync {
+public class TopicServiceSyncImpl implements TopicServiceSync {
     private final TopicRepository topicRepository;
 
     private final TopicMapper topicMapper;
