@@ -1,6 +1,7 @@
 --liquibase formatted sql
 
--- device table
+-- changeset mohammadali:1648311428646-1
+-- preconditions onFail:MARK_RAN onError:MARK_RAN
 CREATE TABLE IF NOT EXISTS `t_iot`.`device`
 (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT,
@@ -8,7 +9,8 @@ CREATE TABLE IF NOT EXISTS `t_iot`.`device`
     PRIMARY KEY (`id`)
 );
 
--- topic table
+-- changeset mohammadali:1648311428646-2
+-- preconditions onFail:MARK_RAN onError:MARK_RAN
 CREATE TABLE IF NOT EXISTS `t_iot`.`topic`
 (
     `id`   BIGINT       NOT NULL AUTO_INCREMENT,
@@ -16,7 +18,8 @@ CREATE TABLE IF NOT EXISTS `t_iot`.`topic`
     PRIMARY KEY (`id`)
 );
 
--- message table
+-- changeset mohammadali:1648311428646-3
+-- preconditions onFail:MARK_RAN onError:MARK_RAN
 CREATE TABLE IF NOT EXISTS `t_iot`.`message`
 (
     `id`                 BIGINT       NOT NULL AUTO_INCREMENT,
