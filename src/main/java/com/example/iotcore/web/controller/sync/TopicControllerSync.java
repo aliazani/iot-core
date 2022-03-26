@@ -29,8 +29,6 @@ public class TopicControllerSync {
 
     private final TopicServiceSync topicService;
 
-//    private final TopicRepository topicRepository;
-
     /**
      * {@code POST  /topics} : Create a new topic.
      *
@@ -42,9 +40,6 @@ public class TopicControllerSync {
     public ResponseEntity<TopicDTO> createTopic(@Valid @RequestBody TopicDTO topicDTO) throws URISyntaxException {
         log.debug("REST request to save Topic : {}", topicDTO);
 
-//        if (topicDTO.getId() != null) {
-//            throw new BadRequestAlertException("A new topic cannot already have an ID", ENTITY_NAME, "idexists");
-//        }
         TopicDTO result = topicService.save(topicDTO);
 
         return ResponseEntity.created(new URI("/api/topics/" + result.getId())).body(result);
@@ -63,17 +58,6 @@ public class TopicControllerSync {
     @PutMapping("/topics/{id}")
     public ResponseEntity<TopicDTO> updateTopic(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody TopicDTO topicDTO) throws URISyntaxException {
         log.debug("REST request to update Topic : {}, {}", id, topicDTO);
-
-//        if (topicDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-//        }
-//        if (!Objects.equals(id, topicDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-//        }
-//
-//        if (!topicRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         TopicDTO result = topicService.save(topicDTO);
 
@@ -94,17 +78,6 @@ public class TopicControllerSync {
     @PatchMapping(value = "/topics/{id}", consumes = {"application/json", "application/merge-patch+json"})
     public ResponseEntity<TopicDTO> partialUpdateTopic(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody TopicDTO topicDTO) throws URISyntaxException {
         log.debug("REST request to partial update Topic partially : {}, {}", id, topicDTO);
-
-//        if (topicDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-//        }
-//        if (!Objects.equals(id, topicDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-//        }
-//
-//        if (!topicRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         Optional<TopicDTO> result = topicService.partialUpdate(topicDTO);
 

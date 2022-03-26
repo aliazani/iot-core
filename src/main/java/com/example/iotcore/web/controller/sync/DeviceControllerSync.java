@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -29,8 +28,6 @@ public class DeviceControllerSync {
     private static final String ENTITY_NAME = "device";
     private final DeviceServiceSync deviceService;
 
-//    private final DeviceRepository deviceRepository;
-
     /**
      * {@code POST  /devices} : Create a new device.
      *
@@ -42,9 +39,6 @@ public class DeviceControllerSync {
     public ResponseEntity<DeviceDTO> createDevice(@Valid @RequestBody DeviceDTO deviceDTO) throws URISyntaxException {
         log.debug("REST request to save Device : {}", deviceDTO);
 
-//        if (deviceDTO.getId() != null) {
-//            throw new BadRequestAlertException("A new device cannot already have an ID", ENTITY_NAME, "idexists");
-//        }
         DeviceDTO result = deviceService.save(deviceDTO);
 
         return ResponseEntity
@@ -68,17 +62,6 @@ public class DeviceControllerSync {
             @Valid @RequestBody DeviceDTO deviceDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Device : {}, {}", id, deviceDTO);
-
-        if (deviceDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, deviceDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-//        if (!deviceRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         DeviceDTO result = deviceService.save(deviceDTO);
 
@@ -104,16 +87,6 @@ public class DeviceControllerSync {
             @NotNull @RequestBody DeviceDTO deviceDTO
     ) throws URISyntaxException {
         log.debug("REST request to partial update Device partially : {}, {}", id, deviceDTO);
-        if (deviceDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, deviceDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-//        if (!deviceRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         Optional<DeviceDTO> result = deviceService.partialUpdate(deviceDTO);
 

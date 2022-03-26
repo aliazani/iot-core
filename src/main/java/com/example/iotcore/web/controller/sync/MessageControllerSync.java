@@ -30,8 +30,6 @@ public class MessageControllerSync {
 
     private final MessageServiceSync messageService;
 
-//    private final MessageRepository messageRepository;
-
 
     /**
      * {@code POST  /messages} : Create a new message.
@@ -44,9 +42,6 @@ public class MessageControllerSync {
     public ResponseEntity<MessageDTO> createMessage(@Valid @RequestBody MessageDTO messageDTO) throws URISyntaxException {
         log.debug("REST request to save Message : {}", messageDTO);
 
-//        if (messageDTO.getId() != null) {
-//            throw new BadRequestAlertException("A new message cannot already have an ID", ENTITY_NAME, "idexists");
-//        }
         MessageDTO result = messageService.save(messageDTO);
 
         return ResponseEntity
@@ -70,17 +65,6 @@ public class MessageControllerSync {
             @Valid @RequestBody MessageDTO messageDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Message : {}, {}", id, messageDTO);
-
-//        if (messageDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-//        }
-//        if (!Objects.equals(id, messageDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-//        }
-
-//        if (!messageRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         MessageDTO result = messageService.save(messageDTO);
 
@@ -106,16 +90,6 @@ public class MessageControllerSync {
             @NotNull @RequestBody MessageDTO messageDTO
     ) throws URISyntaxException {
         log.debug("REST request to partial update Message partially : {}, {}", id, messageDTO);
-//        if (messageDTO.getId() == null) {
-//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-//        }
-//        if (!Objects.equals(id, messageDTO.getId())) {
-//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-//        }
-//
-//        if (!messageRepository.existsById(id)) {
-//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-//        }
 
         Optional<MessageDTO> result = messageService.partialUpdate(messageDTO);
 
