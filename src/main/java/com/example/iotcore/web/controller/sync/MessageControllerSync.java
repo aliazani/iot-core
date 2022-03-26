@@ -1,8 +1,8 @@
-package com.example.iotcorenew.web.controller.sync;
+package com.example.iotcore.web.controller.sync;
 
-import com.example.iotcorenew.domain.Message;
-import com.example.iotcorenew.service.dto.MessageDTO;
-import com.example.iotcorenew.service.sync.MessageServiceSync;
+import com.example.iotcore.domain.Message;
+import com.example.iotcore.service.dto.MessageDTO;
+import com.example.iotcore.service.sync.MessageServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

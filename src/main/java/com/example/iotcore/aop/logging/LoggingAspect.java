@@ -1,4 +1,4 @@
-package com.example.iotcorenew.aop.logging;
+package com.example.iotcore.aop.logging;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -37,9 +37,9 @@ public record LoggingAspect(Environment env) {
      * Pointcut that matches all Spring beans in the application's main packages.
      */
     @Pointcut(
-            "within(com.example.iotcorenew.repository..*)" +
-                    " || within(com.example.iotcorenew.service..*)" +
-                    " || within(com.example.iotcorenew.web.controller..*)"
+            "within(com.example.iotcore.repository..*)" +
+                    " || within(com.example.iotcore.service..*)" +
+                    " || within(com.example.iotcore.web.controller..*)"
     )
     public void applicationPackagePointcut() {
         // Method is empty as this is just a Pointcut, the implementations are in the advices.

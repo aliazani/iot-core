@@ -1,7 +1,7 @@
-package com.example.iotcorenew.service.mapper;
+package com.example.iotcore.service.mapper;
 
-import com.example.iotcorenew.domain.Message;
-import com.example.iotcorenew.service.dto.MessageDTO;
+import com.example.iotcore.domain.Message;
+import com.example.iotcore.service.dto.MessageDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

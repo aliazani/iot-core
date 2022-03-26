@@ -1,4 +1,4 @@
-package com.example.iotcorenew.service.mapper;
+package com.example.iotcore.service.mapper;
 
 import org.mapstruct.BeanMapping;
 import org.mapstruct.MappingTarget;

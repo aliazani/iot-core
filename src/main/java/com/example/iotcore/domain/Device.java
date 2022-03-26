@@ -1,4 +1,4 @@
-package com.example.iotcorenew.domain;
+package com.example.iotcore.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

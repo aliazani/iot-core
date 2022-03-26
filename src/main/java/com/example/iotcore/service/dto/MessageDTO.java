@@ -1,6 +1,6 @@
-package com.example.iotcorenew.service.dto;
+package com.example.iotcore.service.dto;
 
-import com.example.iotcorenew.domain.Message;
+import com.example.iotcore.domain.Message;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

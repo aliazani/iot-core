@@ -1,6 +1,6 @@
-package com.example.iotcorenew.repository;
+package com.example.iotcore.repository;
 
-import com.example.iotcorenew.domain.Device;
+import com.example.iotcore.domain.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

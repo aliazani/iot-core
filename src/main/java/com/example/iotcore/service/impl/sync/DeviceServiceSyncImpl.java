@@ -1,10 +1,10 @@
-package com.example.iotcorenew.service.impl.sync;
+package com.example.iotcore.service.impl.sync;
 
-import com.example.iotcorenew.domain.Device;
-import com.example.iotcorenew.repository.DeviceRepository;
-import com.example.iotcorenew.service.dto.DeviceDTO;
-import com.example.iotcorenew.service.mapper.DeviceMapper;
-import com.example.iotcorenew.service.sync.DeviceServiceSync;
+import com.example.iotcore.domain.Device;
+import com.example.iotcore.repository.DeviceRepository;
+import com.example.iotcore.service.dto.DeviceDTO;
+import com.example.iotcore.service.mapper.DeviceMapper;
+import com.example.iotcore.service.sync.DeviceServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

@@ -1,13 +1,11 @@
-package com.example.iotcorenew.service.sync;
+package com.example.iotcore.service.sync;
 
-import com.example.iotcorenew.domain.Topic;
-import com.example.iotcorenew.service.dto.TopicDTO;
+import com.example.iotcore.domain.Topic;
+import com.example.iotcore.service.dto.TopicDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.LinkedList;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Service Interface for managing {@link Topic}.

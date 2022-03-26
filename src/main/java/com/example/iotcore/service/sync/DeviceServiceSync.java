@@ -1,7 +1,7 @@
-package com.example.iotcorenew.service.sync;
+package com.example.iotcore.service.sync;
 
-import com.example.iotcorenew.domain.Device;
-import com.example.iotcorenew.service.dto.DeviceDTO;
+import com.example.iotcore.domain.Device;
+import com.example.iotcore.service.dto.DeviceDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
