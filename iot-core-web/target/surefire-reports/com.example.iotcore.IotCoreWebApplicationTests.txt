@@ -1,0 +1,21 @@
+-------------------------------------------------------------------------------
+Test set: com.example.iotcore.IotCoreWebApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 6.288 s <<< FAILURE! - in com.example.iotcore.IotCoreWebApplicationTests
+contextLoads  Time elapsed: 0.002 s  <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext
+Caused by: org.springframework.beans.factory.BeanCreationException: 
+Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: Invocation of init method failed; nested exception is liquibase.exception.ValidationFailedException: Validation Failed:
+     3 change sets check sum
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-1::mohammadali was: 8:7159bc1b03d2b56a5945c94609cb0549 but is now: 8:fd29cb45414d5533157fbc82df94506d
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-2::mohammadali was: 8:db53b853d0bf4d28fd73c9997b14c78d but is now: 8:9aeda575e64d67adac8bad6ce7d999c2
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-3::mohammadali was: 8:d768da212f869dc2ea1882e7f22f3b2d but is now: 8:501da0943224888938d61c760f330103
+
+Caused by: liquibase.exception.ValidationFailedException: 
+Validation Failed:
+     3 change sets check sum
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-1::mohammadali was: 8:7159bc1b03d2b56a5945c94609cb0549 but is now: 8:fd29cb45414d5533157fbc82df94506d
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-2::mohammadali was: 8:db53b853d0bf4d28fd73c9997b14c78d but is now: 8:9aeda575e64d67adac8bad6ce7d999c2
+          config/liquibase/changelog/00000000000000_initial_schema.sql::1648311428646-3::mohammadali was: 8:d768da212f869dc2ea1882e7f22f3b2d but is now: 8:501da0943224888938d61c760f330103
+
+

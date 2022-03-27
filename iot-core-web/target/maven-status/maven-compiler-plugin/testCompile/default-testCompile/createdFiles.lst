@@ -1,0 +1,4 @@
+com/example/iotcore/IotCoreWebApplicationTests.class
+com/example/iotcore/dto/TopicDTOTest.class
+com/example/iotcore/dto/DeviceDTOTest.class
+com/example/iotcore/dto/MessageDTOTest.class

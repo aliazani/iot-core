@@ -1,0 +1,8 @@
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/domain/Topic.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/repository/DeviceRepository.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/domain/Device.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/domain/Message.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/config/LoggingAspectConfiguration.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/aop/logging/LoggingAspect.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/repository/TopicRepository.java
+/home/mohammadali/uni/project/iot-core/iot-core-data/src/main/java/com/example/iotcore/repository/MessageRepository.java
