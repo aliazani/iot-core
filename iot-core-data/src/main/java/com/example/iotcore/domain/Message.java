@@ -1,6 +1,7 @@
 package com.example.iotcore.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "message")
 public class Message implements Serializable {
@@ -36,12 +38,10 @@ public class Message implements Serializable {
     @Column(name = "message_type")
     private Integer messageType;
 
-    @OneToOne
-    @JoinColumn(unique = true)
+    @ManyToOne
     private Device device;
 
-    @OneToOne
-    @JoinColumn(unique = true)
+    @ManyToOne
     private Topic topic;
 }
 
