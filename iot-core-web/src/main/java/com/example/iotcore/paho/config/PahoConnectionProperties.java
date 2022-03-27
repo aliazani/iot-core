@@ -1,11 +1,11 @@
-package com.example.mqttclient.paho.config;
+package com.example.iotcore.paho.config;
 
 import java.util.UUID;
 
 public class PahoConnectionProperties {
     public static String PROTOCOL = "tcp://";
     public static String HOST = "localhost:";
-    public static Integer PORT = 1884;
+    public static Integer PORT = 1883;
 
     public static String CLIENT_ID = String.valueOf(UUID.randomUUID());
 
