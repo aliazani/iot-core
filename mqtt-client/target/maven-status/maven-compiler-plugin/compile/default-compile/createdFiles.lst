@@ -1,5 +1,0 @@
-com/example/mqttclient/paho/Publisher.class
-com/example/mqttclient/paho/Callback.class
-com/example/mqttclient/paho/Subscriber.class
-com/example/mqttclient/paho/config/PahoConnectionProperties.class
-com/example/mqttclient/paho/Runner.class
