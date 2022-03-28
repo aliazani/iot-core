@@ -24,7 +24,7 @@ class DeviceTest {
     }
 
     @Test
-    void differentDevices() {
+    void unequalDevices() {
         device1.setId(1L);
         device2.setId(2L);
         assertThat(device1).isNotEqualTo(device2);

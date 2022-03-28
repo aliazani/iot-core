@@ -16,7 +16,7 @@ class MessageTest {
     }
 
     @Test
-    void equalDevices() {
+    void equalMessages() {
         message1.setId(1L);
         message2.setId(message1.getId());
 
@@ -24,7 +24,7 @@ class MessageTest {
     }
 
     @Test
-    void differentDevices() {
+    void unequalMessages() {
         message1.setId(1L);
         message2.setId(2L);
         assertThat(message1).isNotEqualTo(message2);

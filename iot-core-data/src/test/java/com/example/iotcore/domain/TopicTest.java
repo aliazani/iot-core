@@ -16,7 +16,7 @@ class TopicTest {
     }
 
     @Test
-    void equalDevices() {
+    void equalTopics() {
         topic1.setId(1L);
         topic2.setId(topic1.getId());
 
@@ -24,7 +24,7 @@ class TopicTest {
     }
 
     @Test
-    void differentDevices() {
+    void unequalTopics() {
         topic1.setId(1L);
         topic2.setId(2L);
         assertThat(topic1).isNotEqualTo(topic2);

@@ -1,5 +1,6 @@
-package com.example.iotcore.dto;
+package com.example.iotcorebusiness.dto;
 
+import com.example.iotcore.dto.DeviceDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ class DeviceDTOTest {
     }
 
     @Test
-    void equalDevices() {
+    void equalDeviceDTOs() {
         deviceDTO1.setId(1L);
         deviceDTO2.setId(deviceDTO1.getId());
 
@@ -24,7 +25,7 @@ class DeviceDTOTest {
     }
 
     @Test
-    void differentDevices() {
+    void unequalDeviceDTOs() {
         deviceDTO1.setId(1L);
         deviceDTO2.setId(2L);
         assertThat(deviceDTO1).isNotEqualTo(deviceDTO2);
