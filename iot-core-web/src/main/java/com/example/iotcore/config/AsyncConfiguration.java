@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
 @RequiredArgsConstructor
 @Slf4j
 @Configuration
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
 @EnableScheduling
 public class AsyncConfiguration implements AsyncConfigurer {
     private final TaskExecutionProperties taskExecutionProperties;
@@ -28,10 +28,10 @@ public class AsyncConfiguration implements AsyncConfigurer {
         log.debug("Creating Async Task Executor");
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(taskExecutionProperties.getPool().getCoreSize());
-        executor.setMaxPoolSize(taskExecutionProperties.getPool().getMaxSize());
-        executor.setQueueCapacity(taskExecutionProperties.getPool().getQueueCapacity());
-        executor.setThreadNamePrefix(taskExecutionProperties.getThreadNamePrefix());
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(4);
+        executor.setThreadNamePrefix("async-task-thread-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
 
         return executor;
