@@ -5,12 +5,20 @@ import com.example.iotcore.dto.MessageDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Service Interface for managing {@link Message}.
  */
 public interface MessageServiceSync {
+    /**
+     * Save a message.
+     *
+     * @param messages the entities to save.
+     */
+    void saveAll(List<Message> messages);
+
     /**
      * Save a message.
      *

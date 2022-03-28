@@ -1,8 +1,5 @@
-package com.example.iotcore.paho;
+package com.example.mqttclient.paho;
 
-import com.example.iotcore.domain.Message;
-import com.example.iotcore.service.sync.MessageServiceSync;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
@@ -10,41 +7,33 @@ import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component
-@RequiredArgsConstructor
 @Slf4j
 public class Callback implements MqttCallback {
-    private final MessageServiceSync messageServiceSync;
-    private final CopyOnWriteArrayList<Message> runningList = new CopyOnWriteArrayList<>();
-    long start;
+    //    private final Long messageCount = 0L;
+    //    long start;
     RandomAccessFile stream;
     FileChannel channel;
     private int number = 0;
-    private CopyOnWriteArrayList<Message> saveList;
     private boolean startFlag = false;
 
     @Override
     public void disconnected(MqttDisconnectResponse disconnectResponse) {
-        log.debug(MessageFormat.format("Disconnected because of: {0}", disconnectResponse.getReasonString()));
+        log.info(MessageFormat.format("Disconnected because of: {0}", disconnectResponse.getReasonString()));
     }
 
     @Override
     public void mqttErrorOccurred(MqttException exception) {
-        log.debug(MessageFormat.format("Error: {0}", exception.getMessage()));
+        log.info(MessageFormat.format("Error: {0}", exception.getMessage()));
     }
 
     @Override
-    @Async
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         log.info("**************** START ***************");
         String s = Instant.now() + " ," + topic + ", " + message + "\n";
@@ -88,6 +77,7 @@ public class Callback implements MqttCallback {
 
     @Override
     public void deliveryComplete(IMqttToken token) {
+        log.info("*********** Delivery Complete ***********");
     }
 
     @Override

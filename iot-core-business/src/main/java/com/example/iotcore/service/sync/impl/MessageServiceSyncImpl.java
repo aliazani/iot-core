@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,6 +28,12 @@ public class MessageServiceSyncImpl implements MessageServiceSync {
     private final MessageMapper messageMapper;
 
     @Override
+    public void saveAll(List<Message> messages) {
+
+        messageRepository.saveAll(messages);
+    }
+
+    @Override
     public MessageDTO save(MessageDTO messageDTO) {
         log.debug("Request to save Message : {}", messageDTO);
 
@@ -40,15 +47,11 @@ public class MessageServiceSyncImpl implements MessageServiceSync {
     public Optional<MessageDTO> partialUpdate(MessageDTO messageDTO) {
         log.debug("Request to partially update Message : {}", messageDTO);
 
-        return messageRepository
-                .findById(messageDTO.getId())
-                .map(existingMessage -> {
-                    messageMapper.partialUpdate(existingMessage, messageDTO);
+        return messageRepository.findById(messageDTO.getId()).map(existingMessage -> {
+            messageMapper.partialUpdate(existingMessage, messageDTO);
 
-                    return existingMessage;
-                })
-                .map(messageRepository::save)
-                .map(messageMapper::toDto);
+            return existingMessage;
+        }).map(messageRepository::save).map(messageMapper::toDto);
     }
 
     @Override

@@ -1,22 +1,18 @@
-package com.example.iotcore.paho;
+package com.example.mqttclient.paho;
 
-import com.example.iotcore.paho.config.PahoConnectionProperties;
-import lombok.RequiredArgsConstructor;
+import com.example.mqttclient.paho.config.PahoConnectionProperties;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
+
 public class Subscriber {
-    private final Callback callback;
     MqttClient client;
 
     public void run() {
         try {
-            new Subscriber(callback).subscribe();
+            new Subscriber().subscribe();
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -33,7 +29,7 @@ public class Subscriber {
         connectionOptions.setUserName(PahoConnectionProperties.USERNAME);
         connectionOptions.setPassword(PahoConnectionProperties.PASSWORD);
         client.connect(connectionOptions);
-        client.setCallback(callback);
+        client.setCallback(new Callback());
         client.subscribe(new MqttSubscription[]{new MqttSubscription("#", PahoConnectionProperties.QOS)});
     }
 }
