@@ -1,7 +1,7 @@
 package com.example.iotcore.web.controller.sync;
 
-import com.example.iotcore.dto.DeviceDTO;
-import com.example.iotcore.service.sync.DeviceServiceSync;
+import com.example.iotcore.dto.TopicDTO;
+import com.example.iotcore.service.sync.TopicServiceSync;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +14,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,12 +27,9 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * WebMVC tests for the {@link DeviceControllerSync} REST controller.
- */
-@WebMvcTest(controllers = DeviceControllerSync.class)
-class DeviceControllerSyncTest {
-    private static final String ENTITY_API_URL = "/api/devices";
+@WebMvcTest(controllers = TopicControllerSync.class)
+class TopicControllerSyncTest {
+    private static final String ENTITY_API_URL = "/api/topics";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     @Autowired
@@ -44,87 +39,88 @@ class DeviceControllerSyncTest {
     MockMvc mockMvc;
 
     @MockBean
-    DeviceServiceSync deviceServiceSync;
+    TopicServiceSync topicServiceSync;
 
-    DeviceDTO deviceDTO1;
+    TopicDTO topicDTO1;
 
-    DeviceDTO deviceDTO2;
+    TopicDTO topicDTO2;
 
-    List<DeviceDTO> deviceDTOs;
+    List<TopicDTO> topicDTOs;
+
 
     @BeforeEach
     void setUp() {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        deviceDTO1 = DeviceDTO.builder()
+        topicDTO1 = TopicDTO.builder()
                 .id(1L)
-                .macAddress(UUID.randomUUID().toString())
+                .name("topic1")
                 .build();
 
 
-        deviceDTO2 = DeviceDTO.builder()
+        topicDTO2 = TopicDTO.builder()
                 .id(2L)
-                .macAddress(UUID.randomUUID().toString())
+                .name("topic2")
                 .build();
 
-        deviceDTOs = List.of(deviceDTO1, deviceDTO2);
+        topicDTOs = List.of(topicDTO1, topicDTO2);
     }
 
     @Test
-    void createDevice() throws Exception {
+    void createTopic() throws Exception {
         // given
-        DeviceDTO deviceDTO = DeviceDTO.builder()
-                .macAddress(deviceDTO1.getMacAddress())
+        TopicDTO topicDTO = TopicDTO.builder()
+                .name(topicDTO1.getName())
                 .build();
-        given(deviceServiceSync.save(any(DeviceDTO.class))).willReturn(deviceDTO1);
+        given(topicServiceSync.save(any(TopicDTO.class))).willReturn(topicDTO1);
 
         // when
         mockMvc.perform(post(ENTITY_API_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(deviceDTO)))
+                        .content(objectMapper.writeValueAsString(topicDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(deviceDTO1.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(deviceDTO1.getMacAddress()));
+                .andExpect(jsonPath("$.id").value(topicDTO1.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(topicDTO1.getName()));
 
         // then
-        verify(deviceServiceSync, times(1)).save(any(DeviceDTO.class));
+        verify(topicServiceSync, times(1)).save(any(TopicDTO.class));
     }
 
     @Test
-    void updateDevice() throws Exception {
+    void updateTopic() throws Exception {
         // given
-        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
-                .id(deviceDTO1.getId())
-                .macAddress(UUID.randomUUID().toString())
+        TopicDTO updatedTopicDTO = TopicDTO.builder()
+                .id(topicDTO1.getId())
+                .name("New Topic")
                 .build();
-        given(deviceServiceSync.save(any(DeviceDTO.class))).willReturn(updatedDeviceDTO);
+        given(topicServiceSync.save(any(TopicDTO.class))).willReturn(updatedTopicDTO);
 
         // when
         mockMvc.perform(
-                        put(ENTITY_API_URL_ID, deviceDTO1.getId())
+                        put(ENTITY_API_URL_ID, topicDTO1.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                                .content(objectMapper.writeValueAsString(updatedTopicDTO))
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(updatedDeviceDTO.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()));
+                .andExpect(jsonPath("$.id").value(updatedTopicDTO.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(updatedTopicDTO.getName()));
 
         // then
-        verify(deviceServiceSync, times(1)).save(any(DeviceDTO.class));
+        verify(topicServiceSync, times(1)).save(any(TopicDTO.class));
     }
 
     @Test
-    void partialUpdateDevice() throws Exception {
+    void partialUpdateTopic() throws Exception {
         // given
-        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
-                .id(deviceDTO1.getId())
-                .macAddress(UUID.randomUUID().toString())
+        TopicDTO updatedDeviceDTO = TopicDTO.builder()
+                .id(topicDTO1.getId())
+                .name("New Topic")
                 .build();
-        given(deviceServiceSync.partialUpdate(any(DeviceDTO.class))).willReturn(Optional.of(updatedDeviceDTO));
+        given(topicServiceSync.partialUpdate(any(TopicDTO.class))).willReturn(Optional.of(updatedDeviceDTO));
 
         // when
         mockMvc.perform(
@@ -136,52 +132,52 @@ class DeviceControllerSyncTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.id").value(updatedDeviceDTO.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()));
+                .andExpect(jsonPath("$.name").value(updatedDeviceDTO.getName()));
 
         // then
-        verify(deviceServiceSync, times(1)).partialUpdate(any(DeviceDTO.class));
+        verify(topicServiceSync, times(1)).partialUpdate(any(TopicDTO.class));
     }
 
     @Test
-    void getAllDevices() throws Exception {
+    void getAllTopics() throws Exception {
         // given
-        Page<DeviceDTO> deviceDTOPage = new PageImpl<>(deviceDTOs);
-        given(deviceServiceSync.findAll(any(Pageable.class))).willReturn(deviceDTOPage);
+        Page<TopicDTO> topicDTOPage = new PageImpl<>(topicDTOs);
+        given(topicServiceSync.findAll(any(Pageable.class))).willReturn(topicDTOPage);
 
         // when
         mockMvc.perform(get(ENTITY_API_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(deviceDTO1.getId().intValue())))
-                .andExpect(jsonPath("$.[*].macAddress").value(hasItem(deviceDTO1.getMacAddress())))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(deviceDTO2.getId().intValue())))
-                .andExpect(jsonPath("$.[*].macAddress").value(hasItem(deviceDTO2.getMacAddress())))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(topicDTO1.getId().intValue())))
+                .andExpect(jsonPath("$.[*].name").value(hasItem(topicDTO1.getName())))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(topicDTO2.getId().intValue())))
+                .andExpect(jsonPath("$.[*].name").value(hasItem(topicDTO2.getName())))
         ;
 
         // then
-        verify(deviceServiceSync, times(1)).findAll(any());
+        verify(topicServiceSync, times(1)).findAll(any());
     }
 
     @Test
-    void getDevice() throws Exception {
+    void getTopic() throws Exception {
         // given
-        given(deviceServiceSync.findOne(anyLong())).willReturn(Optional.of(deviceDTO1));
-        String foundResult = objectMapper.writeValueAsString(deviceDTO1);
+        given(topicServiceSync.findOne(anyLong())).willReturn(Optional.of(topicDTO1));
+        String foundResult = objectMapper.writeValueAsString(topicDTO1);
 
         // when
         mockMvc.perform(get(ENTITY_API_URL_ID, anyLong()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(foundResult))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(deviceDTO1.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(deviceDTO1.getMacAddress()));
+                .andExpect(jsonPath("$.id").value(topicDTO1.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(topicDTO1.getName()));
 
         // then
-        verify(deviceServiceSync, times(1)).findOne(anyLong());
+        verify(topicServiceSync, times(1)).findOne(anyLong());
     }
 
     @Test
-    void deleteDevice() throws Exception {
+    void deleteTopic()throws Exception {
         // given
 
         // when
@@ -189,6 +185,6 @@ class DeviceControllerSyncTest {
                 .andExpect(status().isNoContent());
 
         // then
-        verify(deviceServiceSync, times(1)).delete(anyLong());
+        verify(topicServiceSync, times(1)).delete(anyLong());
     }
 }
