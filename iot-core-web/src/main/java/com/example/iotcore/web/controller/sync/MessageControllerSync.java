@@ -5,6 +5,7 @@ import com.example.iotcore.dto.MessageDTO;
 import com.example.iotcore.service.sync.MessageServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Profile("sync")
 public class MessageControllerSync {
 
     private static final String ENTITY_NAME = "message";

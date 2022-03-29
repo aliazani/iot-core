@@ -7,6 +7,7 @@ import com.example.iotcore.repository.DeviceRepository;
 import com.example.iotcore.service.sync.DeviceServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
+@Profile("sync")
 public class DeviceServiceSyncImpl implements DeviceServiceSync {
     private final DeviceRepository deviceRepository;
 

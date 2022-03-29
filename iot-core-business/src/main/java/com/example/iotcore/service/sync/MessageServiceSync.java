@@ -2,6 +2,7 @@ package com.example.iotcore.service.sync;
 
 import com.example.iotcore.domain.Message;
 import com.example.iotcore.dto.MessageDTO;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,6 +12,7 @@ import java.util.Optional;
 /**
  * Service Interface for managing {@link Message}.
  */
+@Profile("sync")
 public interface MessageServiceSync {
     /**
      * Save a message.

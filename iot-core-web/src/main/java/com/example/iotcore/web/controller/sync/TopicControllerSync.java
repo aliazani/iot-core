@@ -5,6 +5,7 @@ import com.example.iotcore.dto.TopicDTO;
 import com.example.iotcore.service.sync.TopicServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Profile("sync")
 public class TopicControllerSync {
     private static final String ENTITY_NAME = "topic";
 
@@ -107,6 +109,12 @@ public class TopicControllerSync {
     @GetMapping("/topics/{id}")
     public ResponseEntity<TopicDTO> getTopic(@PathVariable Long id) {
         log.debug("REST request to get Topic : {}", id);
+
+        try {
+            Thread.sleep(10_000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         Optional<TopicDTO> topicDTO = topicService.findOne(id);
 

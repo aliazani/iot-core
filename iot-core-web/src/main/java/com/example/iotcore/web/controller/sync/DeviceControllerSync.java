@@ -5,6 +5,7 @@ import com.example.iotcore.dto.DeviceDTO;
 import com.example.iotcore.service.sync.DeviceServiceSync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Profile("sync")
 public class DeviceControllerSync {
     private static final String ENTITY_NAME = "device";
     private final DeviceServiceSync deviceService;
