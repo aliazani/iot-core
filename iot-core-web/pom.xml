@@ -16,6 +16,8 @@
 
     <properties>
         <paho.version>1.2.5</paho.version>
+        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+        <open-api-plugin.version>1.4</open-api-plugin.version>
     </properties>
 
     <dependencies>
@@ -26,10 +28,23 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
-            <version>${paho.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-webmvc-core</artifactId>
+            <version>${springdoc-openapi.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-data-rest</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -48,11 +63,6 @@
             <version>0.27.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webmvc-core</artifactId>
-            <version>1.6.6</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -60,6 +70,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                <version>${open-api-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
