@@ -2,7 +2,7 @@ package com.example.iotcore.web.controller.async;
 
 import com.example.iotcore.domain.Topic;
 import com.example.iotcore.dto.TopicDTO;
-import com.example.iotcore.service.async.impl.TopicServiceAsync;
+import com.example.iotcore.service.async.TopicServiceAsync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -133,11 +133,6 @@ public class TopicControllerAsync {
     @DeleteMapping("/topics/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteTopic(@PathVariable Long id) {
         log.debug("REST request to delete Topic : {}", id);
-        try {
-            Thread.sleep(10_000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         topicServiceAsync.delete(id);
 
