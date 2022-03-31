@@ -1,6 +1,6 @@
-package com.example.mqttclient.paho;
+package com.example.iotcore;
 
-import com.example.mqttclient.paho.config.PahoConnectionProperties;
+import com.example.iotcore.config.PahoConnectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;

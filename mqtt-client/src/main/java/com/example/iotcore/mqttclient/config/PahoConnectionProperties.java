@@ -1,4 +1,4 @@
-package com.example.mqttclient.paho.config;
+package com.example.iotcore.config;
 
 import java.util.UUID;
 

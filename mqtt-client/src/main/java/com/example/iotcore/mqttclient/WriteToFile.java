@@ -1,6 +1,5 @@
-package com.example.mqttclient.paho;
+package com.example.iotcore;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,8 +10,8 @@ public class WriteToFile {
 //    BufferedWriter bufferedWriter;
     Path path;
 
-    public WriteToFile(String fileName) {
-        path = Paths.get(fileName);
+    public WriteToFile(String path) {
+        this.path = Paths.get(path);
 //        try {
 //            bufferedWriter = new BufferedWriter(new FileWriter(fileName));
 //        } catch (IOException e) {
@@ -21,7 +20,7 @@ public class WriteToFile {
     }
 
 
-    public void writeToFile(String content) {
+    public void write(String content) {
         try {
             Files.write(path, content.getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
@@ -34,7 +33,7 @@ public class WriteToFile {
 //        }
     }
 
-    public void closeFile() {
+    public void close() {
 //        try {
 //            bufferedWriter.close();
 //        } catch (IOException e) {

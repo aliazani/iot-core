@@ -1,4 +1,4 @@
-package com.example.mqttclient.paho;
+package com.example.iotcore;
 
 
 import lombok.extern.slf4j.Slf4j;
