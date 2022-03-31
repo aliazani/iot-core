@@ -1,4 +1,4 @@
-package com.example.iotcore.service.async.impl;
+package com.example.iotcore.service.async;
 
 import com.example.iotcore.domain.Topic;
 import com.example.iotcore.dto.TopicDTO;

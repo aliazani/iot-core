@@ -4,6 +4,7 @@ import com.example.iotcore.domain.Topic;
 import com.example.iotcore.dto.TopicDTO;
 import com.example.iotcore.mapper.TopicMapper;
 import com.example.iotcore.repository.TopicRepository;
+import com.example.iotcore.service.async.TopicServiceAsync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @Transactional
 @Profile("async")
-public class TopicServiceAsyncAsync implements TopicServiceAsync {
+public class TopicServiceAsyncAsyncImpl implements TopicServiceAsync {
 
     private final TopicRepository topicRepository;
 
