@@ -1,4 +1,4 @@
-package com.example.iotcore.config.property;
+package com.example.iotcore.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
