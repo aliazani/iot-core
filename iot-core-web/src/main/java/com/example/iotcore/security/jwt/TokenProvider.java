@@ -1,6 +1,7 @@
 package com.example.iotcore.security.jwt;
 
-import com.example.iotcore.security.SecurityMetersService;
+import com.example.iotcore.security.management.SecurityMetersService;
+import com.example.iotcore.config.property.ApplicationProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -39,9 +40,10 @@ public class TokenProvider {
 
     private final SecurityMetersService securityMetersService;
 
-    public TokenProvider(JWTProperties properties, SecurityMetersService securityMetersService) {
+    public TokenProvider(ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
+
         byte[] keyBytes;
-        String secret = properties.getBase64Secret();
+        String secret = applicationProperties.getJwt().getBase64Secret();
 
         if (!ObjectUtils.isEmpty(secret)) {
             log.debug("Using a Base64-encoded JWT secret key");
@@ -51,14 +53,16 @@ public class TokenProvider {
             log.warn("Warning: the JWT key used is not Base64-encoded. " +
                     "We recommend using the `jwt.base64Secret` key for optimum security.");
 
-            secret = properties.getSecret();
+            secret = applicationProperties.getJwt().getSecret();
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         }
 
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        this.tokenValidityInMilliseconds = 1000 * properties.getTokenValidityInSeconds();
-        this.tokenValidityInMillisecondsForRememberMe = 1000 * properties.getTokenValidityInSecondsForRememberMe();
+        this.tokenValidityInMilliseconds = 1000 * applicationProperties.getJwt().getTokenValidityInSeconds();
+        this.tokenValidityInMillisecondsForRememberMe = 1000 * applicationProperties
+                .getJwt()
+                .getTokenValidityInSecondsForRememberMe();
 
         this.securityMetersService = securityMetersService;
     }
