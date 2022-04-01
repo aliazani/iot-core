@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@EnableJpaRepositories({"com.example.iotcore.repository"})
+@EnableJpaRepositories({"com.example.iotcore.repository", "com.example.iotcore.security.repository"})
 @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 @EnableTransactionManagement
 public class DatabaseConfiguration {

@@ -15,6 +15,7 @@ public class ApplicationProperties {
     private final CorsConfiguration cors = new CorsConfiguration();
     private JWT jwt = new JWT();
     private Email mail = new Email();
+    private Ehcache ehcache = new Ehcache();
 
     @Getter
     @Setter
@@ -36,6 +37,13 @@ public class ApplicationProperties {
         private String from;
 
         private String baseUrl;
+    }
+
+    @Getter
+    @Setter
+    public static class Ehcache {
+        private int timeToLiveSeconds;  // 1 hour
+        private long maxEntries;
     }
 
 }
