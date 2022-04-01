@@ -1,5 +1,6 @@
 package com.example.iotcore.aop.logging;
 
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -18,13 +19,20 @@ import java.util.Arrays;
  * <p>
  * By default, it only runs with the "dev" profile.
  */
+@RequiredArgsConstructor
 @Aspect
-public record LoggingAspect(Environment env) {
+public class LoggingAspect {
+
+    private final Environment env;
 
     /**
      * Pointcut that matches all repositories, services and Web REST endpoints.
      */
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
+    @Pointcut(
+            "within(@org.springframework.stereotype.Repository *)" +
+                    " || within(@org.springframework.stereotype.Service *)" +
+                    " || within(@org.springframework.web.bind.annotation.RestController *)"
+    )
     public void springBeanPointcut() {
         // Method is empty as this is just a Pointcut, the implementations are in the advices.
     }
@@ -32,7 +40,11 @@ public record LoggingAspect(Environment env) {
     /**
      * Pointcut that matches all Spring beans in the application's main packages.
      */
-    @Pointcut("within(com.example.iotcore.web.controller..*)")
+    @Pointcut(
+            "within(com.example.iotcore.repository..*)" +
+                    " || within(com.example.iotcore.service..*)" +
+                    " || within(com.example.iotcore.web.controller..*)"
+    )
     public void applicationPackagePointcut() {
         // Method is empty as this is just a Pointcut, the implementations are in the advices.
     }
@@ -55,23 +67,18 @@ public record LoggingAspect(Environment env) {
      */
     @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
-        if (env.acceptsProfiles(Profiles.of("dev"))) {
-            logger(joinPoint)
-                    .error(
-                            "Exception in {}() with cause = '{}' and exception = '{}'",
-                            joinPoint.getSignature().getName(),
-                            e.getCause() != null ? e.getCause() : "NULL",
-                            e.getMessage(),
-                            e
-                    );
-        } else {
-            logger(joinPoint)
-                    .error(
-                            "Exception in {}() with cause = {}",
-                            joinPoint.getSignature().getName(),
-                            e.getCause() != null ? e.getCause() : "NULL"
-                    );
-        }
+        if (env.acceptsProfiles(Profiles.of("dev")))
+            logger(joinPoint).error(
+                    "Exception in {}() with cause = '{}' and exception = '{}'",
+                    joinPoint.getSignature().getName(),
+                    e.getCause() != null ? e.getCause() : "NULL",
+                    e.getMessage(),
+                    e);
+        else
+            logger(joinPoint).error(
+                    "Exception in {}() with cause = {}",
+                    joinPoint.getSignature().getName(),
+                    e.getCause() != null ? e.getCause() : "NULL");
     }
 
     /**
@@ -81,28 +88,21 @@ public record LoggingAspect(Environment env) {
      * @return result.
      * @throws Throwable throws {@link IllegalArgumentException}.
      */
-
     @Around("applicationPackagePointcut() && springBeanPointcut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         Logger log = logger(joinPoint);
-
-        if (log.isDebugEnabled()) {
-            log.debug("Enter: {}() with argument[s] = {}", joinPoint.getSignature().getName(),
-                    Arrays.toString(joinPoint.getArgs()));
-        }
-
+        if (log.isDebugEnabled())
+            log.debug("Enter: {}() with argument[s] = {}",
+                    joinPoint.getSignature().getName(), Arrays.toString(joinPoint.getArgs()));
         try {
             Object result = joinPoint.proceed();
-            if (log.isDebugEnabled()) {
-                log.debug("Exit: {}() with result = {}", joinPoint.getSignature().getName(),
-                        result);
-            }
+            if (log.isDebugEnabled())
+                log.debug("Exit: {}() with result = {}", joinPoint.getSignature().getName(), result);
             return result;
         } catch (IllegalArgumentException e) {
-            log.error("Illegal argument: {} in {}()", Arrays.toString(joinPoint.getArgs()),
-                    joinPoint.getSignature().getName());
+            log.error("Illegal argument: {} in {}()",
+                    Arrays.toString(joinPoint.getArgs()), joinPoint.getSignature().getName());
             throw e;
         }
     }
-
 }
