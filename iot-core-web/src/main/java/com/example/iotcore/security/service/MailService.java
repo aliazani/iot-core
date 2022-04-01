@@ -1,7 +1,7 @@
 package com.example.iotcore.security.service;
 
+import com.example.iotcore.config.property.ApplicationProperties;
 import com.example.iotcore.security.domain.User;
-import com.example.iotcore.config.property.EmailProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -32,7 +32,7 @@ public class MailService {
 
     private static final String BASE_URL = "baseUrl";
 
-    private final EmailProperties emailProperties;
+    private final ApplicationProperties applicationProperties;
 
     private final JavaMailSender javaMailSender;
 
@@ -56,7 +56,7 @@ public class MailService {
         try {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, isMultipart, StandardCharsets.UTF_8.name());
             message.setTo(to);
-            message.setFrom(emailProperties.getFrom());
+            message.setFrom(applicationProperties.getMail().getFrom());
             message.setSubject(subject);
             message.setText(content, isHtml);
             javaMailSender.send(mimeMessage);
@@ -77,7 +77,7 @@ public class MailService {
         Locale locale = Locale.forLanguageTag(user.getLangKey());
         Context context = new Context(locale);
         context.setVariable(USER, user);
-        context.setVariable(BASE_URL, emailProperties.getBaseUrl());
+        context.setVariable(BASE_URL, applicationProperties.getMail().getBaseUrl());
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);

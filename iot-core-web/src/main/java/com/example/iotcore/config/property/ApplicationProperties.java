@@ -14,7 +14,7 @@ public class ApplicationProperties {
 
     private final CorsConfiguration cors = new CorsConfiguration();
     private JWT jwt = new JWT();
-    private Email email = new Email();
+    private Email mail = new Email();
 
     @Getter
     @Setter
