@@ -1,0 +1,41 @@
+# database connection properties
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3306/t_iot?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true&rewriteBatchedStatements=true
+    username: root
+    password:
+
+    # Optimized settings for hikari
+    hikari:
+      pool-name: Hikari
+      auto-commit: false
+      maximum-pool-size: 5
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  # liquibase
+  liquibase:
+    enabled: false
+    change-log: classpath:/config/liquibase/master.xml
+
+  # JPA, Hibernate
+  jpa:
+    database: mysql
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        ddl-auto: update # set to validate
+        # Batch Size for bulk insert
+        order_inserts: true
+        jdbc:
+          batch-size: 1000

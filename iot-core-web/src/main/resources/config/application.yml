@@ -1,0 +1,18 @@
+# Logging level
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+    com:
+      example:
+        iotcore: DEBUG
+# Active profiles
+spring:
+  profiles:
+    active:
+      - data
+      - dev
+      - sync
+      - web
+      - security

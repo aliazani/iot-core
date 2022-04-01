@@ -1,0 +1,14 @@
+# Open Api
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+spring:
+  clientApp: iot-core-client
+  application:
+    name: Iot-App
+
+server:
+  port: 8080
