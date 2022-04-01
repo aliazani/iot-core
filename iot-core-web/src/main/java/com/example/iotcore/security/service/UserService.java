@@ -11,7 +11,7 @@ import com.example.iotcore.security.exception.EmailAlreadyUsedException;
 import com.example.iotcore.security.exception.InvalidPasswordException;
 import com.example.iotcore.security.exception.UsernameAlreadyUsedException;
 import com.example.iotcore.security.mapper.AuthorityMapper;
-import com.example.iotcore.security.mapper.MyUserMapper;
+import com.example.iotcore.security.mapper.UserMapper;
 import com.example.iotcore.security.repository.AuthorityRepository;
 import com.example.iotcore.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final MyUserMapper userMapper;
+    private final UserMapper userMapper;
 
     private final AuthorityMapper authorityMapper;
 

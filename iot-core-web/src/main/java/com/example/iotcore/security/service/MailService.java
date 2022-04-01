@@ -1,7 +1,7 @@
 package com.example.iotcore.security.service;
 
 import com.example.iotcore.security.domain.User;
-import com.example.iotcore.security.property.EmailProperties;
+import com.example.iotcore.config.property.EmailProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
