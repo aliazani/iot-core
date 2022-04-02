@@ -76,7 +76,7 @@ public class TopicServiceAsyncAsyncImpl implements TopicServiceAsync {
         log.debug("Request to get Topic : {}", id);
 
         return CompletableFuture.supplyAsync(() ->
-            topicRepository.findById(id).map(topicMapper::toDto)
+                topicRepository.findById(id).map(topicMapper::toDto)
         );
     }
 
