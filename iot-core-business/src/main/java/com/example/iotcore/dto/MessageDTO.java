@@ -1,6 +1,7 @@
 package com.example.iotcore.dto;
 
 import com.example.iotcore.domain.Message;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.time.Instant;
 /**
  * A DTO for the {@link Message} entity.
  */
+@Schema(name = "MessageDTO", description = "A DTO for the Message entity.")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,9 +26,7 @@ public class MessageDTO implements Serializable {
 
     private Instant createdTimeStamp;
 
-    private Integer messageType;
+    private Long deviceId;
 
-    private DeviceDTO device;
-
-    private TopicDTO topic;
+    private Long topicId;
 }

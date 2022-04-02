@@ -1,6 +1,7 @@
 package com.example.iotcore.dto;
 
 import com.example.iotcore.domain.Device;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.io.Serializable;
 /**
  * A DTO for the {@link Device} entity.
  */
+@Schema(name = "DeviceDTO", description = "A DTO for the Device entity.")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
