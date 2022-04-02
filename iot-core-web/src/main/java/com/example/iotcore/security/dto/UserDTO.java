@@ -15,8 +15,4 @@ public class UserDTO {
     private Long id;
 
     private String login;
-//    public UserDTO(User user) {
-//        this.id = user.getId();
-//        this.login = user.getLogin();
-//    }
 }

@@ -7,13 +7,13 @@ import com.example.iotcore.security.domain.Authority;
 import com.example.iotcore.security.domain.User;
 import com.example.iotcore.security.dto.AdminUserDTO;
 import com.example.iotcore.security.dto.UserDTO;
-import com.example.iotcore.security.exception.EmailAlreadyUsedException;
-import com.example.iotcore.security.exception.InvalidPasswordException;
 import com.example.iotcore.security.exception.UsernameAlreadyUsedException;
 import com.example.iotcore.security.mapper.AuthorityMapper;
 import com.example.iotcore.security.mapper.UserMapper;
 import com.example.iotcore.security.repository.AuthorityRepository;
 import com.example.iotcore.security.repository.UserRepository;
+import com.example.iotcore.web.errors.EmailAlreadyUsedException;
+import com.example.iotcore.web.errors.InvalidPasswordException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -124,20 +124,8 @@ public class UserService {
                 });
 
         User newUser = userMapper.fromAdminUserDTOToUserEntity(adminUserDTO);
-
-//        User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
-//        newUser.setLogin(adminUserDTO.getLogin().toLowerCase());
-        // new user gets initially a generated password
         newUser.setPassword(encryptedPassword);
-//        newUser.setFirstName(adminUserDTO.getFirstName());
-//        newUser.setLastName(adminUserDTO.getLastName());
-//        if (adminUserDTO.getEmail() != null) {
-//            newUser.setEmail(adminUserDTO.getEmail().toLowerCase());
-//        }
-//        newUser.setImageUrl(adminUserDTO.getImageUrl());
-//        newUser.setLangKey(adminUserDTO.getLangKey());
-        // new user is not active
         newUser.setActivated(false);
         // new user gets registration key
         newUser.setActivationKey(generateRandomAlphaNumericString());
@@ -163,16 +151,8 @@ public class UserService {
     }
 
     public User createUser(AdminUserDTO adminUserDTO) {
-//        User user = new User();
-//        user.setLogin(adminUserDTO.getLogin().toLowerCase());
-//        user.setFirstName(adminUserDTO.getFirstName());
-//        user.setLastName(adminUserDTO.getLastName());
-//        if (adminUserDTO.getEmail() != null) {
-//            user.setEmail(adminUserDTO.getEmail().toLowerCase());
-//        }
-//        user.setImageUrl(adminUserDTO.getImageUrl());
         User user = userMapper.fromAdminUserDTOToUserEntity(adminUserDTO);
-        if (adminUserDTO.getLangKey() == null) user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
+        if (adminUserDTO.getLangKey() == null) user.setLangKey(Constants.DEFAULT_LANGUAGE);
         else user.setLangKey(adminUserDTO.getLangKey());
         String encryptedPassword = passwordEncoder.encode(generateRandomAlphaNumericString());
         user.setPassword(encryptedPassword);
@@ -210,15 +190,6 @@ public class UserService {
                 .map(Optional::get)
                 .map(user -> {
                     this.clearUserCaches(user);
-//                    user.setLogin(adminUserDTO.getLogin().toLowerCase());
-//                    user.setFirstName(adminUserDTO.getFirstName());
-//                    user.setLastName(adminUserDTO.getLastName());
-//                    if (adminUserDTO.getEmail() != null) {
-//                        user.setEmail(adminUserDTO.getEmail().toLowerCase());
-//                    }
-//                    user.setImageUrl(adminUserDTO.getImageUrl());
-//                    user.setActivated(adminUserDTO.isActivated());
-//                    user.setLangKey(adminUserDTO.getLangKey());
                     user = userMapper.fromAdminUserDTOToUserEntity(adminUserDTO);
                     Set<Authority> managedAuthorities = user.getAuthorities();
                     managedAuthorities.clear();
@@ -238,7 +209,6 @@ public class UserService {
                     return user;
                 })
                 .map(userMapper::toAdminUserDTO);
-//                .map(AdminUserDTO::new);
     }
 
     public void deleteUser(String login) {
@@ -286,9 +256,8 @@ public class UserService {
                 .flatMap(userRepository::findOneByLogin)
                 .ifPresent(user -> {
                     String currentEncryptedPassword = user.getPassword();
-                    if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
+                    if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword))
                         throw new InvalidPasswordException();
-                    }
                     String encryptedPassword = passwordEncoder.encode(newPassword);
                     user.setPassword(encryptedPassword);
                     this.clearUserCaches(user);
@@ -302,7 +271,6 @@ public class UserService {
         return userRepository
                 .findAll(pageable)
                 .map(userMapper::toAdminUserDTO);
-//                .map(AdminUserDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -310,7 +278,6 @@ public class UserService {
         return userRepository
                 .findAllByIdNotNullAndActivatedIsTrue(pageable)
                 .map(userMapper::toUserDTO);
-//                .map(UserDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -353,18 +320,12 @@ public class UserService {
                 .stream()
                 .map(authorityMapper::authorityToString)
                 .toList();
-//        return authorityRepository
-//                .findAll()
-//                .stream()
-//                .map(Authority::getName)
-//                .collect(Collectors.toList());
     }
 
     private void clearUserCaches(User user) {
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
 
-        if (user.getEmail() != null) {
+        if (user.getEmail() != null)
             Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
-        }
     }
 }
