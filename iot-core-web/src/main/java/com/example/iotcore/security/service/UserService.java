@@ -190,7 +190,15 @@ public class UserService {
                 .map(Optional::get)
                 .map(user -> {
                     this.clearUserCaches(user);
-                    user = userMapper.fromAdminUserDTOToUserEntity(adminUserDTO);
+
+                    user.setLogin(adminUserDTO.getLogin().toLowerCase());
+                    user.setFirstName(adminUserDTO.getFirstName());
+                    user.setLastName(adminUserDTO.getLastName());
+                    if (adminUserDTO.getEmail() != null) user.setEmail(adminUserDTO.getEmail().toLowerCase());
+                    user.setImageUrl(adminUserDTO.getImageUrl());
+                    user.setActivated(adminUserDTO.isActivated());
+                    user.setLangKey(adminUserDTO.getLangKey());
+
                     Set<Authority> managedAuthorities = user.getAuthorities();
                     managedAuthorities.clear();
                     adminUserDTO
@@ -201,7 +209,6 @@ public class UserService {
                             .map(Optional::get)
                             .forEach(managedAuthorities::add);
 
-//                    user.setAuthorities(managedAuthorities);
                     this.clearUserCaches(user);
 
                     log.debug("Changed Information for User: {}", user);
