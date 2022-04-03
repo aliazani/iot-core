@@ -254,8 +254,7 @@ public class DeviceControllerSync {
             security = {@SecurityRequirement(name = "bearer-key")},
             responses = {
                     @ApiResponse(responseCode = "204", description = "Device successfully deleted",
-                            content = {@Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = DeviceDTO.class))}
+                            content = {@Content(mediaType = "application/json")}
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
                             content = @Content(schema = @Schema(hidden = true))

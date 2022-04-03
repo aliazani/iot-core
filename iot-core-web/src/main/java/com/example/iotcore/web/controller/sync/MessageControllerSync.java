@@ -263,8 +263,7 @@ public class MessageControllerSync {
             security = {@SecurityRequirement(name = "bearer-key")},
             responses = {
                     @ApiResponse(responseCode = "204", description = "Message successfully deleted",
-                            content = {@Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = TopicDTO.class))}
+                            content = {@Content(mediaType = "application/json")}
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
                             content = @Content(schema = @Schema(hidden = true))
