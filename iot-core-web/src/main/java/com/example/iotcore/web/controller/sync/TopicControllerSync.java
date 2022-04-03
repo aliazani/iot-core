@@ -69,7 +69,8 @@ public class TopicControllerSync {
                             , headers = @Header(name = "Location", description = "The URL of the created topic")
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (A new topic cannot already have an ID)",
+                            description = "Bad request (A new topic cannot already have an ID /" +
+                                    " Topic with same name already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -87,6 +88,9 @@ public class TopicControllerSync {
         if (topicDTO.getId() != null)
             throw new BadRequestAlertException("A new %s cannot already have an ID".formatted(ENTITY_NAME)
                     , ENTITY_NAME, "idexists");
+        if (topicRepository.findByNameIgnoreCase(topicDTO.getName()).isPresent())
+            throw new BadRequestAlertException("A new %s cannot have existed name".formatted(ENTITY_NAME)
+                    , ENTITY_NAME, "nameexists");
 
         TopicDTO result = topicService.save(topicDTO);
 
@@ -115,7 +119,8 @@ public class TopicControllerSync {
                                     schema = @Schema(implementation = TopicDTO.class))}
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (Topic is not valid)",
+                            description = "Bad request (Topic is not valid /" +
+                                    " Topic with same name already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -129,6 +134,10 @@ public class TopicControllerSync {
         log.debug("REST request to update Topic : {}, {}", id, topicDTO);
 
         checkIdValidity(topicDTO, id);
+        if (topicRepository.findByNameIgnoreCase(topicDTO.getName()).isPresent())
+            throw new BadRequestAlertException("name already exists"
+                    , ENTITY_NAME, "nameexists");
+
         TopicDTO result = topicService.save(topicDTO);
 
         return ResponseEntity
@@ -157,7 +166,8 @@ public class TopicControllerSync {
                                     schema = @Schema(implementation = TopicDTO.class))}
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (Topic is not valid)",
+                            description = "Bad request (Topic is not valid " +
+                                    "/ Topic with same name already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -175,6 +185,10 @@ public class TopicControllerSync {
         log.debug("REST request to partial update Topic partially : {}, {}", id, topicDTO);
 
         checkIdValidity(topicDTO, id);
+        if (topicRepository.findByNameIgnoreCase(topicDTO.getName()).isPresent())
+            throw new BadRequestAlertException("name already exists"
+                    , ENTITY_NAME, "nameexists");
+
         Optional<TopicDTO> result = topicService.partialUpdate(topicDTO);
 
         return ResponseUtil.wrapOrNotFound(

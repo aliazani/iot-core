@@ -28,6 +28,6 @@ public class Device implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "mac_address")
+    @Column(name = "mac_address", unique = true, nullable = false)
     private String macAddress;
 }

@@ -70,6 +70,18 @@ public class DeviceServiceSyncImpl implements DeviceServiceSync {
     }
 
     @Override
+    @Transactional
+    public Optional<DeviceDTO> findOneByMacAddress(String macAddress) {
+        log.debug("Request to get Device : {}", macAddress);
+
+        Optional<Device> device = deviceRepository.findByMacAddressIgnoreCase(macAddress);
+
+        return Optional.ofNullable(
+                deviceMapper.toDto(device.orElse(null))
+        );
+    }
+
+    @Override
     public void delete(Long id) {
         log.debug("Request to delete Device : {}", id);
 

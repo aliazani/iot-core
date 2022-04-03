@@ -70,6 +70,16 @@ public class TopicServiceSyncImpl implements TopicServiceSync {
     }
 
     @Override
+    public Optional<TopicDTO> findOneByName(String name) {
+        log.debug("Request to get Topic : {}", name);
+        Optional<Topic> topic = topicRepository.findByNameIgnoreCase(name);
+
+        return Optional.ofNullable(
+                topicMapper.toDto(topic.orElse(null))
+        );
+    }
+
+    @Override
     public void delete(Long id) {
         log.debug("Request to delete Topic : {}", id);
 

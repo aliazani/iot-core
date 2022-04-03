@@ -68,7 +68,8 @@ public class DeviceControllerSync {
                             , headers = @Header(name = "Location", description = "The URL of the created device")
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (A new device cannot already have an ID)",
+                            description = "Bad request (A new device cannot already have an ID" +
+                                    " / a device with the same mac address already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -86,6 +87,9 @@ public class DeviceControllerSync {
         if (deviceDTO.getId() != null)
             throw new BadRequestAlertException("A new %s cannot already have an ID".formatted(ENTITY_NAME)
                     , ENTITY_NAME, "idexists");
+        if (deviceRepository.findByMacAddressIgnoreCase(deviceDTO.getMacAddress()).isPresent())
+            throw new BadRequestAlertException("A new %s cannot have existed mac address".formatted(ENTITY_NAME)
+                    , ENTITY_NAME, "macaddressexists");
 
         DeviceDTO result = deviceService.save(deviceDTO);
 
@@ -113,7 +117,8 @@ public class DeviceControllerSync {
                                     schema = @Schema(implementation = DeviceDTO.class))}
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (Device is not valid)",
+                            description = "Bad request (Device is not valid " +
+                                    "/ Device with same mac address already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -127,6 +132,10 @@ public class DeviceControllerSync {
         log.debug("REST request to update Device : {}, {}", id, deviceDTO);
 
         checkIdValidity(deviceDTO, id);
+        if (deviceRepository.findByMacAddressIgnoreCase(deviceDTO.getMacAddress()).isPresent())
+            throw new BadRequestAlertException("mac address already exists"
+                    , ENTITY_NAME, "macaddressexists");
+
         DeviceDTO result = deviceService.save(deviceDTO);
 
         return ResponseEntity
@@ -154,7 +163,8 @@ public class DeviceControllerSync {
                                     schema = @Schema(implementation = DeviceDTO.class))}
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (Device is not valid)",
+                            description = "Bad request (Device is not valid " +
+                                    "/ Device with same mac address already exists)",
                             content = @Content(schema = @Schema(hidden = true))
                     ),
                     @ApiResponse(responseCode = "401", description = "Authentication Failure",
@@ -172,6 +182,10 @@ public class DeviceControllerSync {
         log.debug("REST request to partial update Device partially : {}, {}", id, deviceDTO);
 
         checkIdValidity(deviceDTO, id);
+        if (deviceRepository.findByMacAddressIgnoreCase(deviceDTO.getMacAddress()).isPresent())
+            throw new BadRequestAlertException("mac address already exists"
+                    , ENTITY_NAME, "macaddressexists");
+
         Optional<DeviceDTO> result = deviceService.partialUpdate(deviceDTO);
 
         return ResponseUtil.wrapOrNotFound(

@@ -45,6 +45,14 @@ public interface TopicServiceSync {
     Optional<TopicDTO> findOne(Long id);
 
     /**
+     * Get the "name" topic.
+     *
+     * @param name the name of the entity.
+     * @return the entity.
+     */
+    Optional<TopicDTO> findOneByName(String name);
+
+    /**
      * Delete the "id" topic.
      *
      * @param id the id of the entity.

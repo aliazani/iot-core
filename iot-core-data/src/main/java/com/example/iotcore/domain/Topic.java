@@ -29,6 +29,6 @@ public class Topic implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 }

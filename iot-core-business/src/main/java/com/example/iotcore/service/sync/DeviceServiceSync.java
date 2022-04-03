@@ -46,6 +46,13 @@ public interface DeviceServiceSync {
     Optional<DeviceDTO> findOne(Long id);
 
     /**
+     * Get the "macAddress" device.
+     *
+     * @param macAddress the macAddress of the entity.
+     * @return the entity.
+     */
+    Optional<DeviceDTO> findOneByMacAddress(String macAddress);
+    /**
      * Delete the "id" device.
      *
      * @param id the id of the entity.
