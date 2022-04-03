@@ -25,8 +25,8 @@ public final class PaginationUtil {
      * Generate pagination headers for a Spring Data {@link org.springframework.data.domain.Page} object.
      *
      * @param uriBuilder The URI builder.
-     * @param page The page.
-     * @param <T> The type of object.
+     * @param page       The page.
+     * @param <T>        The type of object.
      * @return http header.
      */
     public static <T> HttpHeaders generatePaginationHttpHeaders(UriComponentsBuilder uriBuilder, Page<T> page) {
@@ -42,7 +42,7 @@ public final class PaginationUtil {
 
         if (pageNumber > 0)
             link.append(prepareLink(uriBuilder, pageNumber - 1, pageSize, "prev"))
-                .append(",");
+                    .append(",");
 
         link.append(prepareLink(uriBuilder, page.getTotalPages() - 1, pageSize, "last"))
                 .append(",")
