@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serial;
@@ -18,7 +16,6 @@ import java.io.Serializable;
 @Builder
 @Entity
 @Table(name = "topic")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Topic implements Serializable {
 
     @Serial
