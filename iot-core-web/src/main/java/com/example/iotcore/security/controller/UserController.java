@@ -4,9 +4,6 @@ import com.example.iotcore.config.Constants;
 import com.example.iotcore.security.AuthoritiesConstants;
 import com.example.iotcore.security.domain.User;
 import com.example.iotcore.security.dto.AdminUserDTO;
-import com.example.iotcore.security.exception.EmailAlreadyUsedException;
-import com.example.iotcore.security.exception.ExistedIdException;
-import com.example.iotcore.security.exception.LoginAlreadyUsedException;
 import com.example.iotcore.security.mapper.UserMapper;
 import com.example.iotcore.security.repository.UserRepository;
 import com.example.iotcore.security.service.MailService;
@@ -14,6 +11,17 @@ import com.example.iotcore.security.service.UserService;
 import com.example.iotcore.util.HeaderUtil;
 import com.example.iotcore.util.PaginationUtil;
 import com.example.iotcore.util.ResponseUtil;
+import com.example.iotcore.web.errors.BadRequestAlertException;
+import com.example.iotcore.web.errors.EmailAlreadyUsedException;
+import com.example.iotcore.web.errors.LoginAlreadyUsedException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,6 +68,7 @@ import java.util.Optional;
  * <p>
  * Another option would be to have a specific JPA entity graph to handle this case.
  */
+@Tag(name = "User Management", description = "User Management ONLY FOR ADMIN")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -101,6 +110,31 @@ public class UserController {
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
      */
+    @Operation(summary = "Create new user", description = "Create new user",
+            security = {@SecurityRequirement(name = "bearer-key")},
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "User created successfully",
+                            content = {@Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AdminUserDTO.class))}
+                            , headers = @Header(name = "Location", description = "The URL of the created user")
+                    ),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad request (login/email already in use)",
+                            content = @Content(schema = @Schema(hidden = true))
+                    ),
+                    @ApiResponse(responseCode = "401",
+                            description = "Authentication Failure(Only admin can access this API)",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
+            content = @Content(examples = {@ExampleObject(name = "AdminUserDTO",
+                    value = "{\"login\": \"string\", \"email\": \"string@email.com\"," +
+                            "\"langKey\": \"string\", \"firstName\": \"string\", \"lastName\": \"string\"," +
+                            "\"activated\": true, \"imageUrl\": \"string\"," +
+                            "  \"authorities\": [\"ROLE_USER\" ,\"ROLE_ADMIN\"]" +
+                            "}")}))
     @PostMapping("/users")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<User> createUser(@Valid @RequestBody AdminUserDTO adminUserDTO) throws URISyntaxException {
@@ -108,7 +142,7 @@ public class UserController {
 
         // Lowercase the user login before comparing with database
         if (adminUserDTO.getId() != null)
-            throw new ExistedIdException("A new user cannot already have an ID");
+            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
         else if (userRepository.findOneByLogin(adminUserDTO.getLogin().toLowerCase()).isPresent())
             throw new LoginAlreadyUsedException();
         else if (userRepository.findOneByEmailIgnoreCase(adminUserDTO.getEmail()).isPresent())
@@ -132,6 +166,30 @@ public class UserController {
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
      */
+    @Operation(summary = "Update user", description = "Update user",
+            security = {@SecurityRequirement(name = "bearer-key")},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User updated successfully",
+                            content = {@Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AdminUserDTO.class))}
+                    ),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad request (login/email is already in use)",
+                            content = @Content(schema = @Schema(hidden = true))
+                    ),
+                    @ApiResponse(responseCode = "401",
+                            description = "Authentication Failure(Only admin can access this API)",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
+            content = @Content(examples = {@ExampleObject(name = "AdminUserDTO",
+                    value = "{\"id\": 1, \"login\": \"string\", \"email\": \"string@email.com\"," +
+                            "\"langKey\": \"string\", \"firstName\": \"string\", \"lastName\": \"string\"," +
+                            "\"activated\": true, \"imageUrl\": \"string\"," +
+                            "  \"authorities\": [\"ROLE_USER\" ,\"ROLE_ADMIN\"]" +
+                            "}")}))
     @PutMapping("/users")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<AdminUserDTO> updateUser(@Valid @RequestBody AdminUserDTO adminUserDTO) {
@@ -158,6 +216,19 @@ public class UserController {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
      */
+
+    @Operation(summary = "Get all users paged", description = "Get all users paged",
+            security = {@SecurityRequirement(name = "bearer-key")},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully retrieved a page of users",
+                            content = {@Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AdminUserDTO.class))}
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Authentication Failure",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
     @GetMapping("/users")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<List<AdminUserDTO>> getAllUsers(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
@@ -187,6 +258,23 @@ public class UserController {
      * @param login the login of the user to find.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user, or with status {@code 404 (Not Found)}.
      */
+
+    @Operation(summary = "Find a username(login) by ID", description = "Find a username(login) by ID",
+            security = {@SecurityRequirement(name = "bearer-key")},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "successfully retrieved a username(login)",
+                            content = {@Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AdminUserDTO.class))}
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Authentication Failure",
+                            content = @Content(schema = @Schema(hidden = true))
+                    ),
+                    @ApiResponse(responseCode = "404",
+                            description = "User Not found",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
     @GetMapping("/users/{login}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<AdminUserDTO> getUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
@@ -203,6 +291,18 @@ public class UserController {
      * @param login the login of the user to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
+
+    @Operation(summary = "Delete a user", description = "Delete a user by username(login)",
+            security = {@SecurityRequirement(name = "bearer-key")},
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "User successfully deleted",
+                            content = {@Content(mediaType = "application/json")}
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Authentication Failure",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
     @DeleteMapping("/users/{login}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
