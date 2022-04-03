@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,6 +32,31 @@ public class OpenApiConfiguration {
                         .addSecuritySchemes("bearer-key",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
+    }
+
+    @Bean
+    public GroupedOpenApi mainEndPointsOpenApi() {
+        String[] paths = {"/api/**"};
+        String[] packagesToScan = {"com.example.iotcore.web.controller.sync"};
+        return GroupedOpenApi
+                .builder()
+                .group("Main API")
+                .pathsToMatch(paths)
+                .packagesToScan(packagesToScan)
+                .build();
+    }
+
+
+    @Bean
+    public GroupedOpenApi userAndAuthenticationOpenApi() {
+        String[] paths = {"/api/**"};
+        String[] packagesToScan = {"com.example.iotcore.security.controller"};
+        return GroupedOpenApi
+                .builder()
+                .group("Users and authentication API")
+                .pathsToMatch(paths)
+                .packagesToScan(packagesToScan)
+                .build();
     }
 
 }

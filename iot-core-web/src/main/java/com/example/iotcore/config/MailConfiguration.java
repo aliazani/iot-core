@@ -12,6 +12,6 @@ public class MailConfiguration {
 
     @Bean
     public JavaMailSender mailSender() {
-        return  new JavaMailSenderImpl();
+        return new JavaMailSenderImpl();
     }
 }
