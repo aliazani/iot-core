@@ -4,6 +4,9 @@ import com.example.iotcore.security.AuthoritiesConstants;
 import com.example.iotcore.security.jwt.JWTConfigurer;
 import com.example.iotcore.security.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -74,9 +77,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/account/reset-password/finish").permitAll()
                 .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/api/**").authenticated()
-                .antMatchers("/management/health").permitAll()
-                .antMatchers("/management/health/**").permitAll()
-                .antMatchers("/management/info").permitAll()
+                .requestMatchers(EndpointRequest.to(HealthEndpoint.class)).permitAll()
+                .requestMatchers(EndpointRequest.to(InfoEndpoint.class)).permitAll()
                 .antMatchers("/management/prometheus").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .and()

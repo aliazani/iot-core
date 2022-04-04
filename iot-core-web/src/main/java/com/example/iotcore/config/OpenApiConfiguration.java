@@ -7,10 +7,13 @@ import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -28,10 +31,14 @@ public class OpenApiConfiguration {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .components(new Components()
-                        .addSecuritySchemes("bearer-key",
-                                new SecurityScheme()
-                                        .type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
+                .components(
+                        new Components().addSecuritySchemes(
+                                "bearer-key", new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                );
     }
 
     @Bean
@@ -56,6 +63,24 @@ public class OpenApiConfiguration {
                 .group("Users and authentication API")
                 .pathsToMatch(paths)
                 .packagesToScan(packagesToScan)
+                .build();
+    }
+
+
+    @Bean
+    public GroupedOpenApi applicationManagementAndMonitoringOpenApi() {
+        String[] paths = {"/management/**"};
+        return GroupedOpenApi
+                .builder()
+                .group("Management and Monitoring")
+                .addOperationCustomizer((operation, handlerMethod) -> {
+                    SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearer-key");
+                    if (!handlerMethod.toString().equals("Actuator web endpoint 'info'"))
+                        operation.addSecurityItem(securityRequirement);
+
+                    return operation;
+                })
+                .pathsToMatch(paths)
                 .build();
     }
 
