@@ -1,6 +1,6 @@
-package com.example.iotcore;
+package com.example.iotcore.mqttclient;
 
-import com.example.iotcore.config.PahoConnectionProperties;
+import com.example.iotcore.mqttclient.config.PahoConnectionProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
@@ -28,7 +28,7 @@ public class Publisher {
 
         MqttConnectionOptions connectionOptions = new MqttConnectionOptions();
         connectionOptions.setUserName(PahoConnectionProperties.USERNAME);
-        connectionOptions.setPassword(PahoConnectionProperties.PASSWORD);
+        connectionOptions.setPassword(PahoConnectionProperties.PASSWORD.getBytes());
         connectionOptions.setCleanStart(false);
         connectionOptions.setMaxReconnectDelay(1000);
         client.connect(connectionOptions);

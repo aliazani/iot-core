@@ -1,4 +1,4 @@
-package com.example.iotcore;
+package com.example.iotcore.mqttclient;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -10,10 +10,17 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class Callback implements MqttCallback {
-    private final WriteToFile writeToFile = new WriteToFile("messages-" + Instant.now() + ".csv");
+    public static final int TEN_MESSAGE_FOR_EACH_TOPIC = 9;
+    private final Map<String, Deque<String>> map = new HashMap<>();
+    private WriteToFile writeToFile = new WriteToFile("messages-" + Instant.now() + ".csv");
     private long number = 0L;
 
     @Override
@@ -28,9 +35,28 @@ public class Callback implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        String content = ++number + ", " + Instant.now() + ", " + topic + ", " + message.toString() + "\n";
+        String content = number + " ," + Instant.now() + ", " + topic + ", " + message.toString() + "\n";
+
+        map.computeIfPresent(topic, (key, value) -> {
+            if (value.size() > TEN_MESSAGE_FOR_EACH_TOPIC)
+                value.removeFirst();
+            value.add(message.toString());
+
+            return value;
+        });
+
+        if (number % 100_000 == 0 && number != 0)
+            CompletableFuture.runAsync(() -> writeToFile = new WriteToFile("messages-" + Instant.now() + ".csv"));
+
+        map.computeIfAbsent(topic, key -> {
+            LinkedList<String> messageList = new LinkedList<>();
+            messageList.add(message.toString());
+
+            return messageList;
+        });
+
         writeToFile.write(content);
-        System.out.println("Num: " + number);
+        log.warn("Num: " + ++number);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.iotcore;
+package com.example.iotcore.mqttclient;
 
 import java.io.IOException;
 import java.nio.file.Files;

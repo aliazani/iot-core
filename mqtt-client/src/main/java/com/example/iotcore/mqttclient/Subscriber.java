@@ -1,8 +1,9 @@
-package com.example.iotcore;
+package com.example.iotcore.mqttclient;
 
-import com.example.iotcore.config.PahoConnectionProperties;
+import com.example.iotcore.mqttclient.config.PahoConnectionProperties;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 
@@ -21,13 +22,13 @@ public class Subscriber {
     public void subscribe() throws MqttException {
         client = new MqttClient(PahoConnectionProperties.PROTOCOL +
                 PahoConnectionProperties.HOST + PahoConnectionProperties.PORT,
-                PahoConnectionProperties.CLIENT_ID);
+                PahoConnectionProperties.CLIENT_ID, null);
 
         MqttConnectionOptions connectionOptions = new MqttConnectionOptions();
         connectionOptions.setCleanStart(false);
         connectionOptions.setMaxReconnectDelay(1000);
         connectionOptions.setUserName(PahoConnectionProperties.USERNAME);
-        connectionOptions.setPassword(PahoConnectionProperties.PASSWORD);
+        connectionOptions.setPassword(PahoConnectionProperties.PASSWORD.getBytes());
         client.connect(connectionOptions);
         client.setCallback(new Callback());
         client.subscribe(new MqttSubscription[]{new MqttSubscription("#", PahoConnectionProperties.QOS)});
