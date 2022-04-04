@@ -1,0 +1,9 @@
+
+ ${AnsiColor.GREEN}██╗ ██████╗ ████████╗  ${AnsiColor.CYAN}   ██████╗ ██████╗ ██████╗ ███████╗
+ ${AnsiColor.GREEN}██║██╔═══██╗╚══██╔══╝  ${AnsiColor.CYAN}  ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+ ${AnsiColor.GREEN}██║██║   ██║   ██║     ${AnsiColor.CYAN}  ██║     ██║   ██║██████╔╝█████╗
+ ${AnsiColor.GREEN}██║██║   ██║   ██║     ${AnsiColor.CYAN}  ██║     ██║   ██║██╔══██╗██╔══╝
+ ${AnsiColor.GREEN}██║╚██████╔╝   ██║     ${AnsiColor.CYAN}  ╚██████╗╚██████╔╝██║  ██║███████╗
+ ${AnsiColor.GREEN}╚═╝ ╚═════╝    ╚═╝     ${AnsiColor.CYAN}   ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+
+${AnsiColor.BRIGHT_BLUE}:: IOT Core 🤓  :: Running Spring Boot ${spring-boot.version} ::
