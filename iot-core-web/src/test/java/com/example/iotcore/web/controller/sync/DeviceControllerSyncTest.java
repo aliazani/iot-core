@@ -1,20 +1,24 @@
 package com.example.iotcore.web.controller.sync;
 
+import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.DeviceDTO;
+import com.example.iotcore.repository.DeviceRepository;
 import com.example.iotcore.service.sync.DeviceServiceSync;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * WebMVC tests for the {@link DeviceControllerSync} REST controller.
  */
-@WebMvcTest(controllers = DeviceControllerSync.class)
+@WebMvcTest(controllers = DeviceControllerSync.class,
+        excludeAutoConfiguration = {SecurityConfiguration.class,
+                ManagementWebSecurityAutoConfiguration.class,
+                SecurityAutoConfiguration.class})
+@ContextConfiguration(classes = DeviceControllerSync.class)
 class DeviceControllerSyncTest {
     private static final String ENTITY_API_URL = "/api/devices";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -45,6 +53,9 @@ class DeviceControllerSyncTest {
 
     @MockBean
     DeviceServiceSync deviceServiceSync;
+
+    @MockBean
+    DeviceRepository deviceRepository;
 
     DeviceDTO deviceDTO1;
 
@@ -99,7 +110,9 @@ class DeviceControllerSyncTest {
                 .id(deviceDTO1.getId())
                 .macAddress(UUID.randomUUID().toString())
                 .build();
+
         given(deviceServiceSync.save(any(DeviceDTO.class))).willReturn(updatedDeviceDTO);
+        given(deviceRepository.existsById(updatedDeviceDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(
@@ -125,6 +138,7 @@ class DeviceControllerSyncTest {
                 .macAddress(UUID.randomUUID().toString())
                 .build();
         given(deviceServiceSync.partialUpdate(any(DeviceDTO.class))).willReturn(Optional.of(updatedDeviceDTO));
+        given(deviceRepository.existsById(updatedDeviceDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(

@@ -1,18 +1,23 @@
 package com.example.iotcore.web.controller.sync;
 
+import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.TopicDTO;
+import com.example.iotcore.repository.TopicRepository;
 import com.example.iotcore.service.sync.TopicServiceSync;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -27,7 +32,11 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = TopicControllerSync.class)
+@WebMvcTest(controllers = TopicControllerSync.class,
+        excludeAutoConfiguration = {SecurityConfiguration.class,
+                ManagementWebSecurityAutoConfiguration.class,
+                SecurityAutoConfiguration.class})
+@ContextConfiguration(classes = TopicControllerSync.class)
 class TopicControllerSyncTest {
     private static final String ENTITY_API_URL = "/api/topics";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -40,6 +49,9 @@ class TopicControllerSyncTest {
 
     @MockBean
     TopicServiceSync topicServiceSync;
+
+    @MockBean
+    TopicRepository topicRepository;
 
     TopicDTO topicDTO1;
 
@@ -96,6 +108,7 @@ class TopicControllerSyncTest {
                 .name("New Topic")
                 .build();
         given(topicServiceSync.save(any(TopicDTO.class))).willReturn(updatedTopicDTO);
+        given(topicRepository.existsById(updatedTopicDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(
@@ -116,23 +129,24 @@ class TopicControllerSyncTest {
     @Test
     void partialUpdateTopic() throws Exception {
         // given
-        TopicDTO updatedDeviceDTO = TopicDTO.builder()
+        TopicDTO updatedTopicDTO = TopicDTO.builder()
                 .id(topicDTO1.getId())
                 .name("New Topic")
                 .build();
-        given(topicServiceSync.partialUpdate(any(TopicDTO.class))).willReturn(Optional.of(updatedDeviceDTO));
+        given(topicServiceSync.partialUpdate(any(TopicDTO.class))).willReturn(Optional.of(updatedTopicDTO));
+        given(topicRepository.existsById(updatedTopicDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(
-                        patch(ENTITY_API_URL_ID, updatedDeviceDTO.getId())
+                        patch(ENTITY_API_URL_ID, updatedTopicDTO.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                                .content(objectMapper.writeValueAsString(updatedTopicDTO))
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(updatedDeviceDTO.getId().intValue()))
-                .andExpect(jsonPath("$.name").value(updatedDeviceDTO.getName()));
+                .andExpect(jsonPath("$.id").value(updatedTopicDTO.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(updatedTopicDTO.getName()));
 
         // then
         verify(topicServiceSync, times(1)).partialUpdate(any(TopicDTO.class));
@@ -177,7 +191,7 @@ class TopicControllerSyncTest {
     }
 
     @Test
-    void deleteTopic()throws Exception {
+    void deleteTopic() throws Exception {
         // given
 
         // when

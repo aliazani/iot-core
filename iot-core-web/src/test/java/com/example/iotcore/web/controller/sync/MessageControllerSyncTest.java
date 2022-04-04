@@ -1,28 +1,29 @@
 package com.example.iotcore.web.controller.sync;
 
-import com.example.iotcore.dto.DeviceDTO;
+import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.MessageDTO;
-import com.example.iotcore.dto.TopicDTO;
+import com.example.iotcore.repository.MessageRepository;
 import com.example.iotcore.service.sync.MessageServiceSync;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -31,7 +32,11 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = MessageControllerSync.class)
+@WebMvcTest(controllers = MessageControllerSync.class,
+        excludeAutoConfiguration = {SecurityConfiguration.class,
+                ManagementWebSecurityAutoConfiguration.class,
+                SecurityAutoConfiguration.class})
+@ContextConfiguration(classes = MessageControllerSync.class)
 class MessageControllerSyncTest {
     private static final String ENTITY_API_URL = "/api/messages";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -44,6 +49,9 @@ class MessageControllerSyncTest {
 
     @MockBean
     MessageServiceSync messageServiceSync;
+
+    @MockBean
+    MessageRepository messageRepository;
 
     MessageDTO messageDTO1;
 
@@ -59,9 +67,8 @@ class MessageControllerSyncTest {
                 .id(1L)
                 .content("First Message")
                 .createdTimeStamp(Instant.now())
-                .device(DeviceDTO.builder().macAddress(UUID.randomUUID().toString()).build())
-                .messageType(1)
-                .topic(TopicDTO.builder().name("Topic 1").build())
+                .deviceId(1L)
+                .topicId(1L)
                 .build();
 
 
@@ -69,9 +76,8 @@ class MessageControllerSyncTest {
                 .id(2L)
                 .content("Second Message")
                 .createdTimeStamp(Instant.now())
-                .device(DeviceDTO.builder().macAddress(UUID.randomUUID().toString()).build())
-                .messageType(2)
-                .topic(TopicDTO.builder().name("Topic 2").build())
+                .deviceId(2L)
+                .topicId(2L)
                 .build();
 
         messageDTOs = List.of(messageDTO1, messageDTO2);
@@ -82,9 +88,8 @@ class MessageControllerSyncTest {
         // given
         MessageDTO messageDTO = MessageDTO.builder()
                 .content(messageDTO1.getContent())
-                .device(messageDTO1.getDevice())
-                .messageType(messageDTO1.getMessageType())
-                .topic(messageDTO1.getTopic())
+                .deviceId(messageDTO1.getDeviceId())
+                .topicId(messageDTO1.getTopicId())
                 .build();
         given(messageServiceSync.save(any(MessageDTO.class))).willReturn(messageDTO1);
 
@@ -98,9 +103,8 @@ class MessageControllerSyncTest {
                 .andExpect(jsonPath("$.id").value(messageDTO1.getId().intValue()))
                 .andExpect(jsonPath("$.content").value(messageDTO1.getContent()))
                 .andExpect(jsonPath("$.createdTimeStamp").value(messageDTO1.getCreatedTimeStamp().toString()))
-                .andExpect(jsonPath("$.messageType").value(messageDTO1.getMessageType()))
-                .andExpect(jsonPath("$.device.macAddress").value(messageDTO1.getDevice().getMacAddress()))
-                .andExpect(jsonPath("$.topic.name").value(messageDTO1.getTopic().getName()))
+                .andExpect(jsonPath("$.deviceId").value(messageDTO1.getDeviceId()))
+                .andExpect(jsonPath("$.topicId").value(messageDTO1.getTopicId()))
         ;
 
         // then
@@ -113,12 +117,12 @@ class MessageControllerSyncTest {
         MessageDTO updatedMessageDTO = MessageDTO.builder()
                 .id(messageDTO1.getId())
                 .content("Updated Message")
-                .device(messageDTO1.getDevice())
-                .messageType(messageDTO1.getMessageType())
+                .deviceId(messageDTO1.getDeviceId())
                 .createdTimeStamp(messageDTO1.getCreatedTimeStamp())
-                .topic(messageDTO1.getTopic())
+                .topicId(messageDTO1.getTopicId())
                 .build();
         given(messageServiceSync.save(any(MessageDTO.class))).willReturn(updatedMessageDTO);
+        given(messageRepository.existsById(updatedMessageDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(put(ENTITY_API_URL_ID, updatedMessageDTO.getId())
@@ -132,9 +136,8 @@ class MessageControllerSyncTest {
                 .andExpect(jsonPath("$.id").value(updatedMessageDTO.getId().intValue()))
                 .andExpect(jsonPath("$.content").value(updatedMessageDTO.getContent()))
                 .andExpect(jsonPath("$.createdTimeStamp").value(updatedMessageDTO.getCreatedTimeStamp().toString()))
-                .andExpect(jsonPath("$.messageType").value(updatedMessageDTO.getMessageType()))
-                .andExpect(jsonPath("$.device.macAddress").value(updatedMessageDTO.getDevice().getMacAddress()))
-                .andExpect(jsonPath("$.topic.name").value(updatedMessageDTO.getTopic().getName()))
+                .andExpect(jsonPath("$.deviceId").value(updatedMessageDTO.getDeviceId()))
+                .andExpect(jsonPath("$.topicId").value(updatedMessageDTO.getTopicId()))
         ;
 
         // then
@@ -147,12 +150,12 @@ class MessageControllerSyncTest {
         MessageDTO updatedMessageDTO = MessageDTO.builder()
                 .id(messageDTO1.getId())
                 .content("Updated Message")
-                .device(messageDTO1.getDevice())
-                .messageType(messageDTO1.getMessageType())
+                .deviceId(messageDTO1.getDeviceId())
                 .createdTimeStamp(messageDTO1.getCreatedTimeStamp())
-                .topic(messageDTO1.getTopic())
+                .topicId(messageDTO1.getTopicId())
                 .build();
         given(messageServiceSync.partialUpdate(any(MessageDTO.class))).willReturn(Optional.of(updatedMessageDTO));
+        given(messageRepository.existsById(updatedMessageDTO.getId())).willReturn(true);
 
         // when
         mockMvc.perform(patch(ENTITY_API_URL_ID, updatedMessageDTO.getId())
@@ -165,9 +168,8 @@ class MessageControllerSyncTest {
                 .andExpect(jsonPath("$.id").value(updatedMessageDTO.getId().intValue()))
                 .andExpect(jsonPath("$.content").value(updatedMessageDTO.getContent()))
                 .andExpect(jsonPath("$.createdTimeStamp").value(updatedMessageDTO.getCreatedTimeStamp().toString()))
-                .andExpect(jsonPath("$.messageType").value(updatedMessageDTO.getMessageType()))
-                .andExpect(jsonPath("$.device.macAddress").value(updatedMessageDTO.getDevice().getMacAddress()))
-                .andExpect(jsonPath("$.topic.name").value(updatedMessageDTO.getTopic().getName()))
+                .andExpect(jsonPath("$.deviceId").value(updatedMessageDTO.getDeviceId()))
+                .andExpect(jsonPath("$.topicId").value(updatedMessageDTO.getTopicId()))
         ;
 
         // then
@@ -184,18 +186,17 @@ class MessageControllerSyncTest {
         mockMvc.perform(get(ENTITY_API_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(messageDTO1.getId().intValue())))
-                .andExpect(jsonPath("$.[*].content").value(hasItem(messageDTO1.getContent())))
-                .andExpect(jsonPath("$.[*].createdTimeStamp").value(hasItem(messageDTO1.getCreatedTimeStamp().toString())))
-                .andExpect(jsonPath("$.[*].messageType").value(hasItem(messageDTO1.getMessageType())))
-                .andExpect(jsonPath("$.[*].device.macAddress").value(hasItem(messageDTO1.getDevice().getMacAddress())))
-                .andExpect(jsonPath("$.[*].topic.name").value(hasItem(messageDTO1.getTopic().getName())))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(messageDTO2.getId().intValue())))
-                .andExpect(jsonPath("$.[*].content").value(hasItem(messageDTO2.getContent())))
-                .andExpect(jsonPath("$.[*].createdTimeStamp").value(hasItem(messageDTO2.getCreatedTimeStamp().toString())))
-                .andExpect(jsonPath("$.[*].messageType").value(hasItem(messageDTO2.getMessageType())))
-                .andExpect(jsonPath("$.[*].device.macAddress").value(hasItem(messageDTO2.getDevice().getMacAddress())))
-                .andExpect(jsonPath("$.[*].topic.name").value(hasItem(messageDTO2.getTopic().getName())))
+                .andExpect(jsonPath("$.[0].id").value(messageDTO1.getId().intValue()))
+                .andExpect(jsonPath("$.[0].content").value(messageDTO1.getContent()))
+                .andExpect(jsonPath("$.[0].createdTimeStamp").value(messageDTO1.getCreatedTimeStamp().toString()))
+                .andExpect(jsonPath("$.[0].deviceId").value(messageDTO1.getDeviceId()))
+                .andExpect(jsonPath("$.[0].topicId").value(messageDTO1.getTopicId()))
+
+                .andExpect(jsonPath("$.[1].id").value(messageDTO2.getId().intValue()))
+                .andExpect(jsonPath("$.[1].content").value(messageDTO2.getContent()))
+                .andExpect(jsonPath("$.[1].createdTimeStamp").value(messageDTO2.getCreatedTimeStamp().toString()))
+                .andExpect(jsonPath("$.[1].deviceId").value(messageDTO2.getDeviceId()))
+                .andExpect(jsonPath("$.[1].topicId").value(messageDTO2.getTopicId()))
         ;
 
         // then
@@ -216,9 +217,8 @@ class MessageControllerSyncTest {
                 .andExpect(jsonPath("$.id").value(messageDTO1.getId().intValue()))
                 .andExpect(jsonPath("$.content").value(messageDTO1.getContent()))
                 .andExpect(jsonPath("$.createdTimeStamp").value(messageDTO1.getCreatedTimeStamp().toString()))
-                .andExpect(jsonPath("$.messageType").value(messageDTO1.getMessageType()))
-                .andExpect(jsonPath("$.device.macAddress").value(messageDTO1.getDevice().getMacAddress()))
-                .andExpect(jsonPath("$.topic.name").value(messageDTO1.getTopic().getName()))
+                .andExpect(jsonPath("$.deviceId").value(messageDTO1.getDeviceId()))
+                .andExpect(jsonPath("$.topicId").value(messageDTO1.getTopicId()))
         ;
 
         // then
