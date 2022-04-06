@@ -1,13 +1,12 @@
-package com.example.iotcore.service.sync.impl;
+package com.example.iotcore.service.impl;
 
 import com.example.iotcore.domain.Topic;
 import com.example.iotcore.dto.TopicDTO;
 import com.example.iotcore.mapper.TopicMapper;
 import com.example.iotcore.repository.TopicRepository;
-import com.example.iotcore.service.sync.TopicServiceSync;
+import com.example.iotcore.service.TopicService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,8 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-@Profile("sync")
-public class TopicServiceSyncImpl implements TopicServiceSync {
+public class TopicServiceImpl implements TopicService {
     private final TopicRepository topicRepository;
 
     private final TopicMapper topicMapper;

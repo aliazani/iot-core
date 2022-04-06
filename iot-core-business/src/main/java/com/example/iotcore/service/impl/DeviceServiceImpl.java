@@ -1,13 +1,12 @@
-package com.example.iotcore.service.sync.impl;
+package com.example.iotcore.service.impl;
 
 import com.example.iotcore.domain.Device;
 import com.example.iotcore.dto.DeviceDTO;
 import com.example.iotcore.mapper.DeviceMapper;
 import com.example.iotcore.repository.DeviceRepository;
-import com.example.iotcore.service.sync.DeviceServiceSync;
+import com.example.iotcore.service.DeviceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,8 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-@Profile("sync")
-public class DeviceServiceSyncImpl implements DeviceServiceSync {
+public class DeviceServiceImpl implements DeviceService {
     private final DeviceRepository deviceRepository;
 
     private final DeviceMapper deviceMapper;

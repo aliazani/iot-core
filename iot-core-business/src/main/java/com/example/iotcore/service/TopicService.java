@@ -1,8 +1,7 @@
-package com.example.iotcore.service.sync;
+package com.example.iotcore.service;
 
 import com.example.iotcore.domain.Topic;
 import com.example.iotcore.dto.TopicDTO;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,8 +10,7 @@ import java.util.Optional;
 /**
  * Service Interface for managing {@link Topic}.
  */
-@Profile("sync")
-public interface TopicServiceSync {
+public interface TopicService {
     /**
      * Save a topic.
      *
