@@ -133,9 +133,7 @@ public class MessageController {
         log.debug("REST request to update Message : {}, {}", id, messageDTO);
 
         checkIdValidity(messageDTO, id);
-        MessageDTO result = messageRepository.existsById(id) ?
-                messageService.partialUpdate(messageDTO).orElse(null) :
-                messageService.save(messageDTO);
+        MessageDTO result = messageService.save(messageDTO);
 
         return ResponseEntity
                 .ok()
