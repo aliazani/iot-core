@@ -130,5 +130,7 @@ VALUES (2, 'user', '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC
 
 
 INSERT INTO user_authority (user_id, authority_name)
-VALUES (2, 'ROLE_ADMIN'), (3, 'ROLE_USER'), (3, 'ROLE_ADMIN');
+VALUES (2, 'ROLE_ADMIN'),
+       (3, 'ROLE_USER'),
+       (3, 'ROLE_ADMIN');
 

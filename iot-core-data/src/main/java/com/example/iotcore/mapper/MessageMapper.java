@@ -3,7 +3,6 @@ package com.example.iotcore.mapper;
 import com.example.iotcore.domain.Message;
 import com.example.iotcore.dto.MessageDTO;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 /**
  * Mapper for the entity {@link Message} and its DTO {@link MessageDTO}.
