@@ -49,7 +49,7 @@ public class MessageController {
     private static final String ENTITY_NAME = "message";
     private final MessageService messageService;
     private final MessageRepository messageRepository;
-    @Value("${clientApp.name}")
+    @Value("${application.clientApp.name}")
     private String applicationName;
 
     /**

@@ -1,0 +1,5 @@
+# Logging level
+logging:
+  level:
+    ROOT: INFO
+    com.example.iotcore: INFO

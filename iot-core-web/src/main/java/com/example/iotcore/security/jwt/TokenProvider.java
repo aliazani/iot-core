@@ -1,7 +1,7 @@
 package com.example.iotcore.security.jwt;
 
-import com.example.iotcore.security.management.SecurityMetersService;
 import com.example.iotcore.config.property.ApplicationProperties;
+import com.example.iotcore.security.management.SecurityMetersService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

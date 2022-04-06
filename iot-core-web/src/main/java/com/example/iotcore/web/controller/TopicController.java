@@ -47,7 +47,7 @@ public class TopicController {
     private static final String ENTITY_NAME = "topic";
     private final TopicService topicService;
     private final TopicRepository topicRepository;
-    @Value("${clientApp.name}")
+    @Value("${application.clientApp.name}")
     private String applicationName;
 
     /**

@@ -1,0 +1,6 @@
+# Logging level
+logging:
+  level:
+    ROOT: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.example.iotcore: DEBUG

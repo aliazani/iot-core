@@ -94,7 +94,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final MailService mailService;
-    @Value("${clientApp.name}")
+    @Value("${application.clientApp.name}")
     private String applicationName;
 
     /**

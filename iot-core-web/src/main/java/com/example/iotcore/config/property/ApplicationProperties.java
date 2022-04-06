@@ -16,6 +16,7 @@ public class ApplicationProperties {
     private JWT jwt = new JWT();
     private Email mail = new Email();
     private Ehcache ehcache = new Ehcache();
+    private ClientApp clientApp = new ClientApp();
 
     @Getter
     @Setter
@@ -44,6 +45,12 @@ public class ApplicationProperties {
     public static class Ehcache {
         private int timeToLiveSeconds;  // 1 hour
         private long maxEntries;
+    }
+
+    @Getter
+    @Setter
+    public static class ClientApp {
+        private String name;
     }
 
 }

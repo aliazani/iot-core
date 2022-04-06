@@ -47,7 +47,7 @@ public class DeviceController {
     private static final String ENTITY_NAME = "device";
     private final DeviceService deviceService;
     private final DeviceRepository deviceRepository;
-    @Value("${spring.clientApp.name}")
+    @Value("${application.clientApp.name}")
     private String applicationName;
 
     /**
