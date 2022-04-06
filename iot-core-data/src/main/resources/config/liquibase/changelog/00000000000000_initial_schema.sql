@@ -119,3 +119,16 @@ VALUES ('topic1'),
 INSERT INTO message(content, created_time_stamp, device, topic)
 VALUES ('message1', '2015-04-13 11:43:47', 1, 1),
        ('message2', '2016-04-13 11:43:47', 2, 2);
+
+INSERT INTO user (id, login, password_hash, first_name, last_name, email, activated,
+                  lang_key, created_by, last_modified_by)
+VALUES (2, 'user', '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC',
+        'firstname-user', 'lastname-user', 'user@localhost.com', true, 'en', 'system', 'system'),
+
+       (3, 'user-admin', '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC',
+        'firstname-admin-user', 'lastname-admin-user', 'user_admin@localhost.com', true, 'en', 'system', 'system');
+
+
+INSERT INTO user_authority (user_id, authority_name)
+VALUES (2, 'ROLE_ADMIN'), (3, 'ROLE_USER'), (3, 'ROLE_ADMIN');
+
