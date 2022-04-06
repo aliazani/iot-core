@@ -44,7 +44,7 @@ public class OpenApiConfiguration {
     @Bean
     public GroupedOpenApi mainEndPointsOpenApi() {
         String[] paths = {"/api/**"};
-        String[] packagesToScan = {"com.example.iotcore.web.controller.sync"};
+        String[] packagesToScan = {"com.example.iotcore.web.controller"};
         return GroupedOpenApi
                 .builder()
                 .group("Main API")
