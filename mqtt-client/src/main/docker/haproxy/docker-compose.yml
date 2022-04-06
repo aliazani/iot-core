@@ -1,0 +1,16 @@
+---
+version: "3.9"
+services:
+  haproxy:
+    container_name: haproxy
+    image: haproxy:2.5.5-alpine
+    restart: always
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    volumes:
+      - ./config:/usr/local/etc/haproxy:ro
+    ports:
+      - "1883:1883"
+
+volumes:
+  config-haproxy:
