@@ -35,7 +35,7 @@ public class Message implements Serializable {
     @Column(name = "created_time_stamp")
     private Instant createdTimeStamp;
 
-    @JoinColumn(name = "deivce")
+    @JoinColumn(name = "device")
     @ManyToOne(targetEntity = Device.class)
     private Device device;
 
