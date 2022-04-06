@@ -24,7 +24,7 @@ public class Publisher {
     public void publish(String topic, String message, int duration) throws MqttException {
         MqttClient client = new MqttClient(PahoConnectionProperties.PROTOCOL +
                 PahoConnectionProperties.HOST + PahoConnectionProperties.PORT,
-                PahoConnectionProperties.CLIENT_ID);
+                PahoConnectionProperties.CLIENT_ID, null);
 
         MqttConnectionOptions connectionOptions = new MqttConnectionOptions();
         connectionOptions.setUserName(PahoConnectionProperties.USERNAME);

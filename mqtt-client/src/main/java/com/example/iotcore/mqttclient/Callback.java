@@ -45,9 +45,6 @@ public class Callback implements MqttCallback {
             return value;
         });
 
-        if (number % 100_000 == 0 && number != 0)
-            CompletableFuture.runAsync(() -> writeToFile = new WriteToFile("messages-" + Instant.now() + ".csv"));
-
         map.computeIfAbsent(topic, key -> {
             LinkedList<String> messageList = new LinkedList<>();
             messageList.add(message.toString());
@@ -55,7 +52,10 @@ public class Callback implements MqttCallback {
             return messageList;
         });
 
+        if (number % 100_000 == 0 && number != 0)
+            CompletableFuture.runAsync(() -> writeToFile = new WriteToFile("messages-" + Instant.now() + ".csv"));
         writeToFile.write(content);
+
         log.warn("Num: " + ++number);
     }
 

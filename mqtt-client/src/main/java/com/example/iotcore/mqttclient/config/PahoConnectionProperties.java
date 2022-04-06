@@ -19,6 +19,6 @@ public class PahoConnectionProperties {
     public static final String USERNAME = "guest";
 
     public static final String PASSWORD = "guest";
-   
+
     public static final int QOS = 0;
 }
