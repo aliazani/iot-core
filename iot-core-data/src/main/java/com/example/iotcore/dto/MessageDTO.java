@@ -26,7 +26,7 @@ public class MessageDTO implements Serializable {
 
     private Instant createdTimeStamp;
 
-    private Long deviceId;
+    private DeviceDTO device;
 
-    private Long topicId;
+    private TopicDTO topic;
 }

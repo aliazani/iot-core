@@ -35,18 +35,13 @@ public class Message implements Serializable {
     @Column(name = "created_time_stamp")
     private Instant createdTimeStamp;
 
-    @JoinColumn(name = "deivce", insertable = false, updatable = false)
+    @JoinColumn(name = "deivce", updatable = false)
     @ManyToOne(targetEntity = Device.class)
     private Device device;
 
-    @Column(name = "device")
-    private Long deviceId;
 
-    @JoinColumn(name = "topic", insertable = false, updatable = false)
+    @JoinColumn(name = "topic", updatable = false)
     @ManyToOne(targetEntity = Topic.class)
     private Topic topic;
-
-    @Column(name = "topic")
-    private Long topicId;
 }
 

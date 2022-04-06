@@ -10,7 +10,5 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring", uses = {DeviceMapper.class, TopicMapper.class})
 public interface MessageMapper extends EntityMapper<MessageDTO, Message> {
-    @Mapping(target = "deviceId", source = "deviceId")
-    @Mapping(target = "topicId", source = "topicId")
     MessageDTO toDto(Message s);
 }
