@@ -78,7 +78,7 @@ public class MessageController {
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
             content = @Content(examples = {@ExampleObject(name = "MessageDTO",
-                    value = "{\"content\": \"string\",\"deviceId\": 0,\"topicId\": 0}")}))
+                    value = "{\"content\": \"string\",\"device\": {\"id\": 1},\"topic\": {\"id\": 1}}")}))
     @PostMapping("/messages")
     public ResponseEntity<MessageDTO> createMessage(@Valid @RequestBody MessageDTO messageDTO) throws URISyntaxException {
         log.debug("REST request to save Message : {}", messageDTO);
@@ -126,14 +126,16 @@ public class MessageController {
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
             content = @Content(examples = {@ExampleObject(name = "MessageDTO",
-                    value = "{\"id\": 0,\"content\": \"string\",\"deviceId\": 0,\"topicId\": 0}")}))
+                    value = "{\"id\": 0,\"content\": \"string\",\"device\": {\"id\": 1},\"topic\": {\"id\": 1}}")}))
     @PutMapping("/messages/{id}")
     public ResponseEntity<MessageDTO> updateMessage(@PathVariable(value = "id", required = false) final Long id,
                                                     @Valid @RequestBody MessageDTO messageDTO) {
         log.debug("REST request to update Message : {}, {}", id, messageDTO);
 
         checkIdValidity(messageDTO, id);
-        MessageDTO result = messageService.save(messageDTO);
+        MessageDTO result = messageRepository.existsById(id) ?
+                messageService.partialUpdate(messageDTO).orElse(null) :
+                messageService.save(messageDTO);
 
         return ResponseEntity
                 .ok()
@@ -174,7 +176,7 @@ public class MessageController {
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
             content = @Content(examples = {@ExampleObject(name = "MessageDTO",
-                    value = "{\"id\": 0,\"content\": \"string\",\"deviceId\": 0,\"topicId\": 0}")}))
+                    value = "{\"id\": 0,\"content\": \"string\",\"device\": {\"id\": 1},\"topic\": {\"id\": 1}}")}))
     @PatchMapping(value = "/messages/{id}", consumes = {"application/json", "application/merge-patch+json"})
     public ResponseEntity<MessageDTO> partialUpdateMessage(@PathVariable(value = "id", required = false) final Long id,
                                                            @NotNull @RequestBody MessageDTO messageDTO) {
