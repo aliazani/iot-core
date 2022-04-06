@@ -3,7 +3,7 @@ package com.example.iotcore.web.controller.sync;
 import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.MessageDTO;
 import com.example.iotcore.repository.MessageRepository;
-import com.example.iotcore.service.sync.MessageServiceSync;
+import com.example.iotcore.service.MessageService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ class MessageControllerSyncTest {
     MockMvc mockMvc;
 
     @MockBean
-    MessageServiceSync messageServiceSync;
+    MessageService messageService;
 
     @MockBean
     MessageRepository messageRepository;
@@ -91,7 +91,7 @@ class MessageControllerSyncTest {
                 .deviceId(messageDTO1.getDeviceId())
                 .topicId(messageDTO1.getTopicId())
                 .build();
-        given(messageServiceSync.save(any(MessageDTO.class))).willReturn(messageDTO1);
+        given(messageService.save(any(MessageDTO.class))).willReturn(messageDTO1);
 
         // when
         mockMvc.perform(post(ENTITY_API_URL)
@@ -108,7 +108,7 @@ class MessageControllerSyncTest {
         ;
 
         // then
-        verify(messageServiceSync, times(1)).save(any(MessageDTO.class));
+        verify(messageService, times(1)).save(any(MessageDTO.class));
     }
 
     @Test
@@ -121,7 +121,7 @@ class MessageControllerSyncTest {
                 .createdTimeStamp(messageDTO1.getCreatedTimeStamp())
                 .topicId(messageDTO1.getTopicId())
                 .build();
-        given(messageServiceSync.save(any(MessageDTO.class))).willReturn(updatedMessageDTO);
+        given(messageService.save(any(MessageDTO.class))).willReturn(updatedMessageDTO);
         given(messageRepository.existsById(updatedMessageDTO.getId())).willReturn(true);
 
         // when
@@ -141,7 +141,7 @@ class MessageControllerSyncTest {
         ;
 
         // then
-        verify(messageServiceSync, times(1)).save(any(MessageDTO.class));
+        verify(messageService, times(1)).save(any(MessageDTO.class));
     }
 
     @Test
@@ -154,7 +154,7 @@ class MessageControllerSyncTest {
                 .createdTimeStamp(messageDTO1.getCreatedTimeStamp())
                 .topicId(messageDTO1.getTopicId())
                 .build();
-        given(messageServiceSync.partialUpdate(any(MessageDTO.class))).willReturn(Optional.of(updatedMessageDTO));
+        given(messageService.partialUpdate(any(MessageDTO.class))).willReturn(Optional.of(updatedMessageDTO));
         given(messageRepository.existsById(updatedMessageDTO.getId())).willReturn(true);
 
         // when
@@ -173,14 +173,14 @@ class MessageControllerSyncTest {
         ;
 
         // then
-        verify(messageServiceSync, times(1)).partialUpdate(any(MessageDTO.class));
+        verify(messageService, times(1)).partialUpdate(any(MessageDTO.class));
     }
 
     @Test
     void getAllMessages() throws Exception {
         // given
         Page<MessageDTO> messageDTOPage = new PageImpl<>(messageDTOs);
-        given(messageServiceSync.findAll(any(Pageable.class))).willReturn(messageDTOPage);
+        given(messageService.findAll(any(Pageable.class))).willReturn(messageDTOPage);
 
         // when
         mockMvc.perform(get(ENTITY_API_URL))
@@ -200,13 +200,13 @@ class MessageControllerSyncTest {
         ;
 
         // then
-        verify(messageServiceSync, times(1)).findAll(any());
+        verify(messageService, times(1)).findAll(any());
     }
 
     @Test
     void getMessage() throws Exception {
         // given
-        given(messageServiceSync.findOne(anyLong())).willReturn(Optional.of(messageDTO1));
+        given(messageService.findOne(anyLong())).willReturn(Optional.of(messageDTO1));
         String foundResult = objectMapper.writeValueAsString(messageDTO1);
 
         // when
@@ -222,7 +222,7 @@ class MessageControllerSyncTest {
         ;
 
         // then
-        verify(messageServiceSync, times(1)).findOne(anyLong());
+        verify(messageService, times(1)).findOne(anyLong());
     }
 
     @Test
@@ -234,6 +234,6 @@ class MessageControllerSyncTest {
                 .andExpect(status().isNoContent());
 
         // then
-        verify(messageServiceSync, times(1)).delete(anyLong());
+        verify(messageService, times(1)).delete(anyLong());
     }
 }

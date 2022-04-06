@@ -3,7 +3,7 @@ package com.example.iotcore.web.controller.sync;
 import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.TopicDTO;
 import com.example.iotcore.repository.TopicRepository;
-import com.example.iotcore.service.sync.TopicServiceSync;
+import com.example.iotcore.service.TopicService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ class TopicControllerSyncTest {
     MockMvc mockMvc;
 
     @MockBean
-    TopicServiceSync topicServiceSync;
+    TopicService topicService;
 
     @MockBean
     TopicRepository topicRepository;
@@ -84,7 +84,7 @@ class TopicControllerSyncTest {
         TopicDTO topicDTO = TopicDTO.builder()
                 .name(topicDTO1.getName())
                 .build();
-        given(topicServiceSync.save(any(TopicDTO.class))).willReturn(topicDTO1);
+        given(topicService.save(any(TopicDTO.class))).willReturn(topicDTO1);
 
         // when
         mockMvc.perform(post(ENTITY_API_URL)
@@ -97,7 +97,7 @@ class TopicControllerSyncTest {
                 .andExpect(jsonPath("$.name").value(topicDTO1.getName()));
 
         // then
-        verify(topicServiceSync, times(1)).save(any(TopicDTO.class));
+        verify(topicService, times(1)).save(any(TopicDTO.class));
     }
 
     @Test
@@ -107,7 +107,7 @@ class TopicControllerSyncTest {
                 .id(topicDTO1.getId())
                 .name("New Topic")
                 .build();
-        given(topicServiceSync.save(any(TopicDTO.class))).willReturn(updatedTopicDTO);
+        given(topicService.save(any(TopicDTO.class))).willReturn(updatedTopicDTO);
         given(topicRepository.existsById(updatedTopicDTO.getId())).willReturn(true);
 
         // when
@@ -123,7 +123,7 @@ class TopicControllerSyncTest {
                 .andExpect(jsonPath("$.name").value(updatedTopicDTO.getName()));
 
         // then
-        verify(topicServiceSync, times(1)).save(any(TopicDTO.class));
+        verify(topicService, times(1)).save(any(TopicDTO.class));
     }
 
     @Test
@@ -133,7 +133,7 @@ class TopicControllerSyncTest {
                 .id(topicDTO1.getId())
                 .name("New Topic")
                 .build();
-        given(topicServiceSync.partialUpdate(any(TopicDTO.class))).willReturn(Optional.of(updatedTopicDTO));
+        given(topicService.partialUpdate(any(TopicDTO.class))).willReturn(Optional.of(updatedTopicDTO));
         given(topicRepository.existsById(updatedTopicDTO.getId())).willReturn(true);
 
         // when
@@ -149,14 +149,14 @@ class TopicControllerSyncTest {
                 .andExpect(jsonPath("$.name").value(updatedTopicDTO.getName()));
 
         // then
-        verify(topicServiceSync, times(1)).partialUpdate(any(TopicDTO.class));
+        verify(topicService, times(1)).partialUpdate(any(TopicDTO.class));
     }
 
     @Test
     void getAllTopics() throws Exception {
         // given
         Page<TopicDTO> topicDTOPage = new PageImpl<>(topicDTOs);
-        given(topicServiceSync.findAll(any(Pageable.class))).willReturn(topicDTOPage);
+        given(topicService.findAll(any(Pageable.class))).willReturn(topicDTOPage);
 
         // when
         mockMvc.perform(get(ENTITY_API_URL))
@@ -169,13 +169,13 @@ class TopicControllerSyncTest {
         ;
 
         // then
-        verify(topicServiceSync, times(1)).findAll(any());
+        verify(topicService, times(1)).findAll(any());
     }
 
     @Test
     void getTopic() throws Exception {
         // given
-        given(topicServiceSync.findOne(anyLong())).willReturn(Optional.of(topicDTO1));
+        given(topicService.findOne(anyLong())).willReturn(Optional.of(topicDTO1));
         String foundResult = objectMapper.writeValueAsString(topicDTO1);
 
         // when
@@ -187,7 +187,7 @@ class TopicControllerSyncTest {
                 .andExpect(jsonPath("$.name").value(topicDTO1.getName()));
 
         // then
-        verify(topicServiceSync, times(1)).findOne(anyLong());
+        verify(topicService, times(1)).findOne(anyLong());
     }
 
     @Test
@@ -199,6 +199,6 @@ class TopicControllerSyncTest {
                 .andExpect(status().isNoContent());
 
         // then
-        verify(topicServiceSync, times(1)).delete(anyLong());
+        verify(topicService, times(1)).delete(anyLong());
     }
 }

@@ -1,10 +1,9 @@
-package com.example.iotcore.web.controller.sync;
+package com.example.iotcore.web.controller;
 
 import com.example.iotcore.domain.Message;
 import com.example.iotcore.dto.MessageDTO;
-import com.example.iotcore.dto.TopicDTO;
 import com.example.iotcore.repository.MessageRepository;
-import com.example.iotcore.service.sync.MessageServiceSync;
+import com.example.iotcore.service.MessageService;
 import com.example.iotcore.util.HeaderUtil;
 import com.example.iotcore.util.PaginationUtil;
 import com.example.iotcore.util.ResponseUtil;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -45,12 +43,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
-@Profile("sync")
-public class MessageControllerSync {
+public class MessageController {
 
 
     private static final String ENTITY_NAME = "message";
-    private final MessageServiceSync messageService;
+    private final MessageService messageService;
     private final MessageRepository messageRepository;
     @Value("${clientApp.name}")
     private String applicationName;
