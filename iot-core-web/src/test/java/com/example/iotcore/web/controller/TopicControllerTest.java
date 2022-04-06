@@ -1,4 +1,4 @@
-package com.example.iotcore.web.controller.sync;
+package com.example.iotcore.web.controller;
 
 import com.example.iotcore.config.SecurityConfiguration;
 import com.example.iotcore.dto.TopicDTO;
@@ -32,12 +32,12 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = TopicControllerSync.class,
+@WebMvcTest(controllers = TopicController.class,
         excludeAutoConfiguration = {SecurityConfiguration.class,
                 ManagementWebSecurityAutoConfiguration.class,
                 SecurityAutoConfiguration.class})
-@ContextConfiguration(classes = TopicControllerSync.class)
-class TopicControllerSyncTest {
+@ContextConfiguration(classes = TopicController.class)
+class TopicControllerTest {
     private static final String ENTITY_API_URL = "/api/topics";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 

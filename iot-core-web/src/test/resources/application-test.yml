@@ -1,0 +1,39 @@
+application:
+  jwt:
+    # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+    #  for production: - In the `SECURITY_AUTHENTICATION_JWT_BASE64_SECRET` environment variable
+    base64-secret: NjlhYjJhOWNkMDYwM2ZiZTk1MWQ0YmZkNmYzYjc2MGJiZjAwMWZkMzdiZTIyNjBhMzE2MzU2MzU4ZjhkYTY3YWVkNjU1ZDQyZjcwM2IzNmJhNzZiOWU3ODdhZDcwOTFjMmM4OTU0ZmU2ZWQ4YWNmZmRiZDRhMGE3ZTQzY2YyZGM=
+    #  secret:
+    # Token is valid 24 hours
+    token-validity-in-seconds: 86400
+    token-validity-in-seconds-for-remember-me: 2592000
+  mail:
+    from: iotCore@localhost
+    base-url: http://127.0.0.1:8080 # Modify according to your server's URL
+  ehcache:
+    time-to-live-seconds: 3600 # 1 hour
+    max-entries: 100
+
+spring:
+  liquibase:
+    enabled: true
+    contexts: test
+    change-log: classpath:/config/liquibase/master.xml
+  clientApp:
+    name: test
+  datasource:
+  jpa:
+    properties:
+      hibernate.jdbc.time_zone: UTC
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: true
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+clientApp:
+  name: test
+
+server:
+  port: 8080
+  host: localhost
