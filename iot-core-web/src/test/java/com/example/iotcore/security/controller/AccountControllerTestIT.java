@@ -1,6 +1,5 @@
 package com.example.iotcore.security.controller;
 
-import com.example.iotcore.MySqlExtension;
 import com.example.iotcore.security.AuthoritiesConstants;
 import com.example.iotcore.security.controller.vm.KeyAndPasswordVM;
 import com.example.iotcore.security.controller.vm.ManagedUserVM;
@@ -21,8 +20,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.util.Set;
@@ -37,7 +41,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class AccountControllerTestIT extends MySqlExtension {
+@Transactional
+@Testcontainers
+class AccountControllerTestIT {
     private final static String PASSWORD_ADMIN_HASH = "$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC";
     private final ManagedUserVM managedUserVM = new ManagedUserVM();
     @Autowired
@@ -55,6 +61,18 @@ class AccountControllerTestIT extends MySqlExtension {
     private User ACTIVATED_USER;
     private User NON_ACTIVATED_USER;
     private User PASSWORD_RESET_USER;
+
+    @Container
+    private static final MySQLContainer MY_SQL_CONTAINER = (MySQLContainer) new MySQLContainer("mysql:8.0.28")
+            .withExposedPorts(3306);
+
+    @DynamicPropertySource
+    public static void overrideProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", MY_SQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", MY_SQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", MY_SQL_CONTAINER::getPassword);
+        registry.add("spring.datasource.driver-class-name", MY_SQL_CONTAINER::getDriverClassName);
+    }
 
     @BeforeEach
     void setUp() {
@@ -108,7 +126,6 @@ class AccountControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void registerAccount() throws Exception {
         // given
 
@@ -125,7 +142,6 @@ class AccountControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void activateAccount() throws Exception {
         // given
 
@@ -179,7 +195,6 @@ class AccountControllerTestIT extends MySqlExtension {
     }
 
     @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
-    @Transactional
     @Test
     void saveAccount() throws Exception {
         // given
@@ -203,7 +218,6 @@ class AccountControllerTestIT extends MySqlExtension {
 
     @Test
     @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
-    @Transactional
     void changePassword() throws Exception {
         // given
         PasswordChangeDTO passwordChangeDTO = PasswordChangeDTO.builder()
@@ -222,7 +236,6 @@ class AccountControllerTestIT extends MySqlExtension {
         assertThat(user.getPassword()).isNotEqualTo(PASSWORD_ADMIN_HASH);
     }
 
-    @Transactional
     @Test
     void requestPasswordReset() throws Exception {
         // given
@@ -236,7 +249,6 @@ class AccountControllerTestIT extends MySqlExtension {
         assertThat(user.getResetKey()).isNotEmpty();
     }
 
-    @Transactional
     @Test
     void finishPasswordReset() throws Exception {
         // given

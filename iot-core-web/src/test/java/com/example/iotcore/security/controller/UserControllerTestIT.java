@@ -1,6 +1,5 @@
 package com.example.iotcore.security.controller;
 
-import com.example.iotcore.MySqlExtension;
 import com.example.iotcore.security.AuthoritiesConstants;
 import com.example.iotcore.security.domain.Authority;
 import com.example.iotcore.security.domain.User;
@@ -18,9 +17,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.util.Set;
@@ -35,9 +39,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class UserControllerTestIT extends MySqlExtension {
+@Testcontainers
+@Transactional
+class UserControllerTestIT {
     private static final String ENTITY_API_URL = "/api/admin/users";
     private static final String ENTITY_API_URL_LOGIN = ENTITY_API_URL + "/{login}";
+    @Container
+    private static final MySQLContainer MY_SQL_CONTAINER = (MySQLContainer) new MySQLContainer("mysql:8.0.28")
+            .withExposedPorts(3306);
     private static User USER_1;
     private static User USER_2;
     private static User USER_3;
@@ -55,6 +64,14 @@ class UserControllerTestIT extends MySqlExtension {
     MailService mailService;
     private AdminUserDTO adminUserDTO6;
     private User user6;
+
+    @DynamicPropertySource
+    public static void overrideProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", MY_SQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", MY_SQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", MY_SQL_CONTAINER::getPassword);
+        registry.add("spring.datasource.driver-class-name", MY_SQL_CONTAINER::getDriverClassName);
+    }
 
     @BeforeEach
     void setUp() {
@@ -129,7 +146,6 @@ class UserControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void createUser() throws Exception {
         // given
         AdminUserDTO adminUserDTO = AdminUserDTO.builder()
@@ -166,7 +182,6 @@ class UserControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void updateUser() throws Exception {
         // given
         AdminUserDTO updatedAdminUserDTO = AdminUserDTO.builder()
@@ -276,7 +291,6 @@ class UserControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void deleteUser() throws Exception {
         // given
         // when
