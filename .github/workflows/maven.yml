@@ -19,6 +19,8 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: maven
+      - name: Build Parent pom
+        run: mvn -B instal --file pom.xml
       - name: Build Data Layer
         run: mvn -B install --file iot-core-data/pom.xml
       - name: Build Business Layer
@@ -27,7 +29,5 @@ jobs:
         run: mvn -B install --file iot-core-web/pom.xml
       - name: Build Mqtt Client
         run: mvn -B install --file mqtt-client/pom.xml
-      - name: Build with Maven
-        run: mvn -B verify --file pom.xml
       - name: send to codecov
         run: bash <(curl -s https://codecov.io/bash)
