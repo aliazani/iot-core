@@ -18,9 +18,9 @@
     <properties>
         <paho.version>1.2.5</paho.version>
         <problem.version>0.27.0</problem.version>
-        <jackson-databind-nullable.version>0.2.2</jackson-databind-nullable.version>
         <open-api-plugin.version>1.4</open-api-plugin.version>
         <jwt.version>0.11.2</jwt.version>
+        <test-containers.version>1.16.3</test-containers.version>
     </properties>
 
     <dependencies>
@@ -111,6 +111,31 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-hibernate5</artifactId>
+        </dependency>
+
+        <!--  Test containers  -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${test-containers.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${test-containers.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>${test-containers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!--    Jcache    -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jcache</artifactId>
         </dependency>
     </dependencies>
 
