@@ -12,6 +12,13 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <modules>
+        <module>iot-core-data</module>
+        <module>iot-core-business</module>
+        <module>iot-core-web</module>
+        <module>mqtt-client</module>
+    </modules>
+
     <groupId>com.example</groupId>
     <artifactId>iot-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
