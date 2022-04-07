@@ -20,7 +20,7 @@ jobs:
           distribution: 'adopt'
           cache: maven
       - name: Build Parent pom
-        run: mvn -B instal --file pom.xml
+        run: mvn -B install --file pom.xml
       - name: Build Data Layer
         run: mvn -B install --file iot-core-data/pom.xml
       - name: Build Business Layer
