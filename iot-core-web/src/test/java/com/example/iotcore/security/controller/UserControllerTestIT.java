@@ -53,8 +53,8 @@ class UserControllerTestIT extends MySqlExtension {
     UserMapper userMapper;
     @Autowired
     MailService mailService;
-    private AdminUserDTO adminUserDTO4;
-    private User user4;
+    private AdminUserDTO adminUserDTO6;
+    private User user6;
 
     @BeforeEach
     void setUp() {
@@ -101,25 +101,25 @@ class UserControllerTestIT extends MySqlExtension {
         USER_3.setCreatedBy("system");
         USER_3.setLastModifiedBy("system");
 
-        adminUserDTO4 = AdminUserDTO.builder()
-                .id(4L)
-                .login("user4")
-                .firstName("firstname-user4")
-                .lastName("lastname-user-4")
-                .email("user4@localhost.com")
+        adminUserDTO6 = AdminUserDTO.builder()
+                .id(6L)
+                .login("user6")
+                .firstName("firstname-user6")
+                .lastName("lastname-user-6")
+                .email("user5@localhost.com")
                 .imageUrl("http://placehold.it/50x50")
                 .langKey("EN")
                 .authorities(Set.of("ROLE_USER"))
                 .build();
 
-        user4 = User.builder()
-                .id(adminUserDTO4.getId())
-                .login(adminUserDTO4.getLogin())
-                .firstName(adminUserDTO4.getFirstName())
-                .lastName(adminUserDTO4.getLastName())
-                .email(adminUserDTO4.getEmail())
-                .imageUrl(adminUserDTO4.getImageUrl())
-                .langKey(adminUserDTO4.getLangKey())
+        user6 = User.builder()
+                .id(adminUserDTO6.getId())
+                .login(adminUserDTO6.getLogin())
+                .firstName(adminUserDTO6.getFirstName())
+                .lastName(adminUserDTO6.getLastName())
+                .email(adminUserDTO6.getEmail())
+                .imageUrl(adminUserDTO6.getImageUrl())
+                .langKey(adminUserDTO6.getLangKey())
                 .activated(true)
                 .authorities(Set.of(new Authority("ROLE_USER")))
                 .password("password")
@@ -133,13 +133,13 @@ class UserControllerTestIT extends MySqlExtension {
     void createUser() throws Exception {
         // given
         AdminUserDTO adminUserDTO = AdminUserDTO.builder()
-                .login(adminUserDTO4.getLogin())
-                .firstName(adminUserDTO4.getFirstName())
-                .lastName(adminUserDTO4.getLastName())
-                .email(adminUserDTO4.getEmail())
-                .imageUrl(adminUserDTO4.getImageUrl())
-                .langKey(adminUserDTO4.getLangKey())
-                .authorities(adminUserDTO4.getAuthorities())
+                .login(adminUserDTO6.getLogin())
+                .firstName(adminUserDTO6.getFirstName())
+                .lastName(adminUserDTO6.getLastName())
+                .email(adminUserDTO6.getEmail())
+                .imageUrl(adminUserDTO6.getImageUrl())
+                .langKey(adminUserDTO6.getLangKey())
+                .authorities(adminUserDTO6.getAuthorities())
                 .build();
 
         // when
@@ -150,19 +150,19 @@ class UserControllerTestIT extends MySqlExtension {
                 )
                 .andExpect(status().isCreated())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(user4.getId().intValue()))
-                .andExpect(jsonPath("$.login").value(user4.getLogin()))
-                .andExpect(jsonPath("$.firstName").value(user4.getFirstName()))
-                .andExpect(jsonPath("$.lastName").value(user4.getLastName()))
-                .andExpect(jsonPath("$.email").value(user4.getEmail()))
-                .andExpect(jsonPath("$.imageUrl").value(user4.getImageUrl()))
-                .andExpect(jsonPath("$.langKey").value(user4.getLangKey()))
-                .andExpect(jsonPath("$.activated").value(user4.isActivated()))
+                .andExpect(jsonPath("$.id").value(user6.getId().intValue()))
+                .andExpect(jsonPath("$.login").value(user6.getLogin()))
+                .andExpect(jsonPath("$.firstName").value(user6.getFirstName()))
+                .andExpect(jsonPath("$.lastName").value(user6.getLastName()))
+                .andExpect(jsonPath("$.email").value(user6.getEmail()))
+                .andExpect(jsonPath("$.imageUrl").value(user6.getImageUrl()))
+                .andExpect(jsonPath("$.langKey").value(user6.getLangKey()))
+                .andExpect(jsonPath("$.activated").value(user6.isActivated()))
         ;
 
         // then
-        assertThat(userRepository.existsById(user4.getId())).isTrue();
-        assertThat(userRepository.findAll()).hasSize(4);
+        assertThat(userRepository.existsById(user6.getId())).isTrue();
+        assertThat(userRepository.findAll()).hasSize(6);
     }
 
     @Test
@@ -204,7 +204,7 @@ class UserControllerTestIT extends MySqlExtension {
         User user = userRepository.findById(USER_1.getId()).get();
         assertThat(user.getFirstName()).isEqualTo(updatedAdminUserDTO.getFirstName());
         assertThat(user.getLastName()).isEqualTo(updatedAdminUserDTO.getLastName());
-        assertThat(user.getAuthorities()).isEqualTo(user4.getAuthorities());
+        assertThat(user.getAuthorities()).isEqualTo(user6.getAuthorities());
     }
 
     @Test
@@ -288,6 +288,6 @@ class UserControllerTestIT extends MySqlExtension {
 
         // then
         assertThat(userRepository.findById(USER_3.getId())).isEmpty();
-        assertThat(userRepository.findAll()).hasSize(2);
+        assertThat(userRepository.findAll()).hasSize(4);
     }
 }

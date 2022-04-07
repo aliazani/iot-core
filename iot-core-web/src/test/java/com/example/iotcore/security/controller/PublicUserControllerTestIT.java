@@ -53,7 +53,7 @@ class PublicUserControllerTestIT extends MySqlExtension {
                 .andExpect(jsonPath("$[2].login").value(userDTO3.getLogin()));
 
         // then
-        assertThat(userService.getAllPublicUsers(any())).hasSize(3);
+        assertThat(userService.getAllPublicUsers(any())).hasSize(4);
     }
 
     @Test
