@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class DeviceControllerTestIT extends MySqlExtension {
     private static final String ENTITY_API_URL = "/api/devices";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -38,20 +41,18 @@ class DeviceControllerTestIT extends MySqlExtension {
     private static final DeviceDTO DEVICE_DTO_1 = new DeviceDTO();
     private static final DeviceDTO DEVICE_DTO_2 = new DeviceDTO();
     private static final DeviceDTO DEVICE_DTO_3 = new DeviceDTO();
-
+    private static final String ENTITY_NAME = "device";
     @Autowired
     ObjectMapper objectMapper;
-
     @Autowired
     MockMvc mockMvc;
-
     @Autowired
     DeviceService deviceService;
-
     @Autowired
     DeviceRepository deviceRepository;
-
     DeviceDTO deviceDTO4;
+    @Value("${application.clientApp.name}")
+    private String applicationName;
 
     @BeforeEach
     void setUp() {
@@ -73,7 +74,6 @@ class DeviceControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void createDevice() throws Exception {
         // given
         DeviceDTO deviceDTO = DeviceDTO.builder()
@@ -88,7 +88,9 @@ class DeviceControllerTestIT extends MySqlExtension {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.id").value(deviceDTO4.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(deviceDTO4.getMacAddress()));
+                .andExpect(jsonPath("$.macAddress").value(deviceDTO4.getMacAddress()))
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.created".formatted(applicationName, ENTITY_NAME)));
 
         // then
         assertThat(deviceRepository.existsById(deviceDTO4.getId())).isTrue();
@@ -96,7 +98,53 @@ class DeviceControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
+    void createDevice_exitingId() throws Exception {
+        // given
+        DeviceDTO deviceDTO = DeviceDTO.builder()
+                .id(deviceDTO4.getId())
+                .macAddress(deviceDTO4.getMacAddress())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idexists"))
+        ;
+
+        // then
+        assertThat(deviceRepository.existsById(deviceDTO4.getId())).isFalse();
+        assertThat(deviceRepository.findAll()).hasSize(3);
+    }
+
+    @Test
+    void createDevice_exitingMacAddress() throws Exception {
+        // given
+        DeviceDTO deviceDTO = DeviceDTO.builder()
+                .macAddress(DEVICE_DTO_1.getMacAddress())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("macaddressexists"))
+        ;
+
+        // then
+        assertThat(deviceRepository.existsById(deviceDTO4.getId())).isFalse();
+        assertThat(deviceRepository.findAll()).hasSize(3);
+    }
+
+    @Test
     void updateDevice() throws Exception {
         // given
         DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
@@ -114,15 +162,121 @@ class DeviceControllerTestIT extends MySqlExtension {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.id").value(updatedDeviceDTO.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()));
+                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()))
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.updated".formatted(applicationName, ENTITY_NAME)));
 
         // then
         Device device = deviceRepository.findById(DEVICE_DTO_1.getId()).get();
         assertThat(device.getMacAddress()).isEqualTo(updatedDeviceDTO.getMacAddress());
     }
 
+
     @Test
-    @Transactional
+    void updateDevice_idNull() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(null)
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        put(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnull"))
+        ;
+
+        // then
+        Device device = deviceRepository.getById(DEVICE_DTO_1.getId());
+        assertThat(device.getMacAddress()).isNotEqualTo(updatedDeviceDTO.getMacAddress());
+    }
+
+    @Test
+    void updateDevice_idMismatchDevice() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(DEVICE_DTO_2.getId())
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        put(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idinvalid"))
+        ;
+
+        // then
+        Device device = deviceRepository.getById(DEVICE_DTO_1.getId());
+        assertThat(device.getMacAddress()).isNotEqualTo(updatedDeviceDTO.getMacAddress());
+    }
+
+    @Test
+    void updateDevice_nonExistingDevice() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(deviceDTO4.getId())
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        put(ENTITY_API_URL_ID, deviceDTO4.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnotfound"))
+        ;
+
+        // then
+        Optional<Device> device = deviceRepository.findById(deviceDTO4.getId());
+        assertThat(device).isNotPresent();
+    }
+
+    @Test
+    void updateDevice_alreadyExistsMacAddress() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(DEVICE_DTO_1.getId())
+                .macAddress(DEVICE_DTO_2.getMacAddress())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        put(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("macaddressexists"))
+        ;
+
+        // then
+        Device device = deviceRepository.findById(DEVICE_DTO_1.getId()).get();
+        assertThat(device.getMacAddress()).isNotEqualTo(DEVICE_DTO_2.getMacAddress());
+    }
+
+    @Test
     void partialUpdateDevice() throws Exception {
         // given
         DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
@@ -140,11 +294,119 @@ class DeviceControllerTestIT extends MySqlExtension {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.id").value(updatedDeviceDTO.getId().intValue()))
-                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()));
+                .andExpect(jsonPath("$.macAddress").value(updatedDeviceDTO.getMacAddress()))
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.updated".formatted(applicationName, ENTITY_NAME)));
 
         // then
         Device device = deviceRepository.findById(DEVICE_DTO_1.getId()).get();
         assertThat(device.getMacAddress()).isEqualTo(updatedDeviceDTO.getMacAddress());
+    }
+
+
+    @Test
+    void partialUpdateDevice_idNull() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(null)
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        patch(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnull"))
+        ;
+
+        // then
+        Device device = deviceRepository.getById(DEVICE_DTO_1.getId());
+        assertThat(device.getMacAddress()).isNotEqualTo(updatedDeviceDTO.getMacAddress());
+    }
+
+    @Test
+    void partialUpdateDevice_idMismatchDevice() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(DEVICE_DTO_2.getId())
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        patch(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idinvalid"))
+        ;
+
+        // then
+        Device device = deviceRepository.getById(DEVICE_DTO_1.getId());
+        assertThat(device.getMacAddress()).isNotEqualTo(updatedDeviceDTO.getMacAddress());
+    }
+
+    @Test
+    void partialUpdateDevice_nonExistingDevice() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(deviceDTO4.getId())
+                .macAddress(UUID.randomUUID().toString())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        patch(ENTITY_API_URL_ID, updatedDeviceDTO.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnotfound"))
+        ;
+
+        // then
+        Optional<Device> device = deviceRepository.findById(deviceDTO4.getId());
+        assertThat(device).isNotPresent();
+    }
+
+    @Test
+    void partialUpdateDevice_alreadyExistsMacAddress() throws Exception {
+        // given
+        DeviceDTO updatedDeviceDTO = DeviceDTO.builder()
+                .id(DEVICE_DTO_1.getId())
+                .macAddress(DEVICE_DTO_2.getMacAddress())
+                .build();
+
+        // when
+        mockMvc.perform(
+                        patch(ENTITY_API_URL_ID, DEVICE_DTO_1.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updatedDeviceDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("macaddressexists"))
+        ;
+
+        // then
+        // then
+        Device device = deviceRepository.findById(DEVICE_DTO_1.getId()).get();
+        assertThat(device.getMacAddress()).isNotEqualTo(DEVICE_DTO_2.getMacAddress());
     }
 
     @Test
@@ -179,13 +441,28 @@ class DeviceControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
+    void getDevice_noneExistingDevice() throws Exception {
+        // given
+        // when
+        mockMvc.perform(get(ENTITY_API_URL_ID, deviceDTO4.getId()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + deviceDTO4.getId()))
+        ;
+
+        // then
+    }
+
+    @Test
     void deleteDevice() throws Exception {
         // given
 
         // when
         mockMvc.perform(delete(ENTITY_API_URL_ID, DEVICE_DTO_3.getId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.deleted".formatted(applicationName, ENTITY_NAME)));
 
         // then
         assertThat(deviceRepository.findById(DEVICE_DTO_3.getId())).isEmpty();

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,12 +32,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class MessageControllerTestIT extends MySqlExtension {
     private static final String ENTITY_API_URL = "/api/messages";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final MessageDTO MESSAGE_DTO_1 = new MessageDTO();
     private static final MessageDTO MESSAGE_DTO_2 = new MessageDTO();
+    private static final String ENTITY_NAME = "message";
 
     @Autowired
     ObjectMapper objectMapper;
@@ -50,6 +54,9 @@ class MessageControllerTestIT extends MySqlExtension {
     MessageRepository messageRepository;
 
     MessageDTO messageDTO3;
+
+    @Value("${application.clientApp.name}")
+    private String applicationName;
 
 
     @BeforeEach
@@ -91,7 +98,6 @@ class MessageControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
     void createMessage() throws Exception {
         // given
         MessageDTO messageDTO = MessageDTO.builder()
@@ -113,6 +119,8 @@ class MessageControllerTestIT extends MySqlExtension {
                 .andExpect(jsonPath("$.createdTimeStamp").value(messageDTO3.getCreatedTimeStamp().toString()))
                 .andExpect(jsonPath("$.device.id").value(messageDTO3.getDevice().getId()))
                 .andExpect(jsonPath("$.topic.id").value(messageDTO3.getTopic().getId()))
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.created".formatted(applicationName, ENTITY_NAME)))
         ;
 
         // then
@@ -121,7 +129,33 @@ class MessageControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
+    void createMessage_existingId() throws Exception {
+        // given
+        MessageDTO messageDTO = MessageDTO.builder()
+                .id(messageDTO3.getId())
+                .content(messageDTO3.getContent())
+                .device(messageDTO3.getDevice())
+                .topic(messageDTO3.getTopic())
+                .createdTimeStamp(messageDTO3.getCreatedTimeStamp())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(messageDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idexists"))
+        ;
+
+        // then
+        assertThat(messageRepository.existsById(messageDTO3.getId())).isFalse();
+        assertThat(messageRepository.findAll()).hasSize(2);
+    }
+
+    @Test
     void updateMessage() throws Exception {
         // given
         MessageDTO updatedMessageDTO = MessageDTO.builder()
@@ -147,7 +181,8 @@ class MessageControllerTestIT extends MySqlExtension {
                 .andExpect(jsonPath("$.device.macAddress").value(MESSAGE_DTO_1.getDevice().getMacAddress()))
                 .andExpect(jsonPath("$.topic.id").value(updatedMessageDTO.getTopic().getId()))
                 .andExpect(jsonPath("$.topic.name").value(MESSAGE_DTO_1.getTopic().getName()))
-        ;
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.updated".formatted(applicationName, ENTITY_NAME)));
 
         // then
         Message message = messageRepository.findById(MESSAGE_DTO_1.getId()).get();
@@ -156,7 +191,92 @@ class MessageControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
+    void updateMessage_idNull() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(null)
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(put(ENTITY_API_URL_ID, updatedMessageDTO.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnull"))
+        ;
+
+        // then
+        Message message = messageRepository.getById(MESSAGE_DTO_1.getId());
+        assertThat(message.getContent()).isNotEqualTo(updatedMessageDTO.getContent());
+        assertThat(message.getCreatedTimeStamp()).isNotEqualTo(updatedMessageDTO.getCreatedTimeStamp());
+    }
+
+    @Test
+    void updateMessage_idMismatchMessage() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(MESSAGE_DTO_2.getId())
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(put(ENTITY_API_URL_ID, MESSAGE_DTO_1.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idinvalid"))
+        ;
+
+        // then
+        Message message = messageRepository.getById(MESSAGE_DTO_1.getId());
+        assertThat(message.getContent()).isNotEqualTo(updatedMessageDTO.getContent());
+        assertThat(message.getCreatedTimeStamp()).isNotEqualTo(updatedMessageDTO.getCreatedTimeStamp());
+    }
+
+    @Test
+    void updateMessage_nonExistingMessage() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(messageDTO3.getId())
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(put(ENTITY_API_URL_ID, messageDTO3.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnotfound"))
+        ;
+
+        // then
+        Optional<Message> message = messageRepository.findById(messageDTO3.getId());
+        assertThat(message).isNotPresent();
+    }
+
+    @Test
     void partialUpdateMessage() throws Exception {
         // given
         MessageDTO updatedMessageDTO = MessageDTO.builder()
@@ -179,12 +299,99 @@ class MessageControllerTestIT extends MySqlExtension {
                 .andExpect(jsonPath("$.createdTimeStamp").value(MESSAGE_DTO_1.getCreatedTimeStamp().toString()))
                 .andExpect(jsonPath("$.device.id").value(updatedMessageDTO.getDevice().getId()))
                 .andExpect(jsonPath("$.topic.id").value(updatedMessageDTO.getTopic().getId()))
-        ;
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.updated".formatted(applicationName, ENTITY_NAME)));
 
         // then
         Message message = messageRepository.findById(MESSAGE_DTO_1.getId()).get();
         assertThat(message.getContent()).isEqualTo(updatedMessageDTO.getContent());
         assertThat(message.getCreatedTimeStamp()).isEqualTo(MESSAGE_DTO_1.getCreatedTimeStamp());
+    }
+
+    @Test
+    void partialUpdateMessage_idNull() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(null)
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(patch(ENTITY_API_URL_ID, updatedMessageDTO.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnull"))
+        ;
+
+        // then
+        Message message = messageRepository.getById(MESSAGE_DTO_1.getId());
+        assertThat(message.getContent()).isNotEqualTo(updatedMessageDTO.getContent());
+        assertThat(message.getCreatedTimeStamp()).isNotEqualTo(updatedMessageDTO.getCreatedTimeStamp());
+    }
+
+    @Test
+    void partialUpdateMessage_idMismatchMessage() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(MESSAGE_DTO_2.getId())
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(patch(ENTITY_API_URL_ID, MESSAGE_DTO_1.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idinvalid"))
+        ;
+
+        // then
+        Message message = messageRepository.getById(MESSAGE_DTO_1.getId());
+        assertThat(message.getContent()).isNotEqualTo(updatedMessageDTO.getContent());
+        assertThat(message.getCreatedTimeStamp()).isNotEqualTo(updatedMessageDTO.getCreatedTimeStamp());
+    }
+
+    @Test
+    void partialUpdateMessage_nonExistingMessage() throws Exception {
+        // given
+        MessageDTO updatedMessageDTO = MessageDTO.builder()
+                .id(messageDTO3.getId())
+                .content("new message 1")
+                .createdTimeStamp(Instant.now())
+                .device(DeviceDTO.builder().id(MESSAGE_DTO_1.getDevice().getId()).build())
+                .topic(TopicDTO.builder().id(MESSAGE_DTO_1.getTopic().getId()).build())
+                .build();
+
+        // when
+        mockMvc.perform(patch(ENTITY_API_URL_ID, messageDTO3.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedMessageDTO))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value(ENTITY_NAME))
+                .andExpect(jsonPath("$.errorKey").value("idnotfound"))
+        ;
+
+        // then
+        Optional<Message> message = messageRepository.findById(messageDTO3.getId());
+        assertThat(message).isNotPresent();
     }
 
     @Test
@@ -232,13 +439,29 @@ class MessageControllerTestIT extends MySqlExtension {
     }
 
     @Test
-    @Transactional
+    void getMessage_nonExistingMessage() throws Exception {
+        // given
+
+        // when
+        mockMvc.perform(get(ENTITY_API_URL_ID, messageDTO3.getId()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + messageDTO3.getId()))
+        ;
+
+        // then
+    }
+
+    @Test
     void deleteMessage() throws Exception {
         // given
 
         // when
         mockMvc.perform(delete(ENTITY_API_URL_ID, MESSAGE_DTO_1.getId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.deleted".formatted(applicationName, ENTITY_NAME)));
 
         // then
         assertThat(messageRepository.findById(MESSAGE_DTO_1.getId())).isEmpty();
