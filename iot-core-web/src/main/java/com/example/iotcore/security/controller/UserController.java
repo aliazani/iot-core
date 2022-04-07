@@ -131,8 +131,8 @@ public class UserController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
             content = @Content(examples = {@ExampleObject(name = "AdminUserDTO",
                     value = "{\"login\": \"string\", \"email\": \"string@email.com\"," +
-                            "\"langKey\": \"string\", \"firstName\": \"string\", \"lastName\": \"string\"," +
-                            "\"activated\": true, \"imageUrl\": \"string\"," +
+                            "\"langKey\": \"string\", \"firstName\": \"string\"," +
+                            " \"lastName\": \"string\", \"imageUrl\": \"string\"," +
                             "  \"authorities\": [\"ROLE_USER\" ,\"ROLE_ADMIN\"]" +
                             "}")}))
     @PostMapping("/users")
