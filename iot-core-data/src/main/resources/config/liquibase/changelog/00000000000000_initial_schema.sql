@@ -134,3 +134,21 @@ VALUES (2, 'ROLE_USER'),
        (3, 'ROLE_USER'),
        (3, 'ROLE_ADMIN');
 
+
+INSERT INTO user (id, login, activation_key, password_hash, first_name, last_name, email, activated,
+                  lang_key, created_by, last_modified_by, created_date)
+VALUES ( 4, 'not-activated-user', 'activation-key'
+       , '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC'
+       , 'not-activated-firstname', 'not-activated-lastname', 'not-activated@localhost.com', false, 'en', 'anonymous'
+       , null, '2015-04-13 11:43:47');
+INSERT INTO user_authority (user_id, authority_name)
+VALUES (4, 'ROLE_USER');
+
+INSERT INTO user (id, login, reset_key, reset_date, password_hash, first_name, last_name, email, activated,
+                  lang_key, created_by, last_modified_by, created_date)
+VALUES ( 5, 'password-reset', 'reset-key', CURRENT_TIMESTAMP
+       , '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC'
+       , 'password-reset-firstname', 'password-reset-lastname', 'password-reset@localhost.com', true, 'en', 'anonymous'
+       , null, '2016-04-13 11:43:47');
+INSERT INTO user_authority (user_id, authority_name)
+VALUES (5, 'ROLE_USER');
