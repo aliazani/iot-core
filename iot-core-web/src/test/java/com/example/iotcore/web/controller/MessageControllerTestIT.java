@@ -129,6 +129,36 @@ class MessageControllerTestIT extends MySqlExtension {
     }
 
     @Test
+    void createMessage_nonExistingTimeStamp() throws Exception {
+        // given
+        MessageDTO messageDTO = MessageDTO.builder()
+                .content(messageDTO3.getContent())
+                .device(messageDTO3.getDevice())
+                .topic(messageDTO3.getTopic())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(messageDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.id").value(messageDTO3.getId().intValue() + 1))
+                .andExpect(jsonPath("$.content").value(messageDTO3.getContent()))
+                .andExpect(jsonPath("$.createdTimeStamp").isNotEmpty())
+                .andExpect(jsonPath("$.device.id").value(messageDTO3.getDevice().getId()))
+                .andExpect(jsonPath("$.topic.id").value(messageDTO3.getTopic().getId()))
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.%s.created".formatted(applicationName, ENTITY_NAME)))
+        ;
+
+        // then
+        assertThat(messageRepository.existsById(messageDTO3.getId() + 1)).isTrue();
+        assertThat(messageRepository.findAll()).hasSize(3);
+    }
+
+    @Test
     void createMessage_existingId() throws Exception {
         // given
         MessageDTO messageDTO = MessageDTO.builder()
@@ -202,7 +232,7 @@ class MessageControllerTestIT extends MySqlExtension {
                 .build();
 
         // when
-        mockMvc.perform(put(ENTITY_API_URL_ID, updatedMessageDTO.getId())
+        mockMvc.perform(put(ENTITY_API_URL_ID, MESSAGE_DTO_1.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedMessageDTO))
@@ -320,7 +350,7 @@ class MessageControllerTestIT extends MySqlExtension {
                 .build();
 
         // when
-        mockMvc.perform(patch(ENTITY_API_URL_ID, updatedMessageDTO.getId())
+        mockMvc.perform(patch(ENTITY_API_URL_ID, MESSAGE_DTO_1.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedMessageDTO))
@@ -447,7 +477,7 @@ class MessageControllerTestIT extends MySqlExtension {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.title").value("Not Found"))
-                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + messageDTO3.getId()))
+                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + "/" + messageDTO3.getId()))
         ;
 
         // then

@@ -451,7 +451,7 @@ class TopicControllerTestIT extends MySqlExtension {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.title").value("Not Found"))
-                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + topicDTO4.getId()))
+                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + "/" + topicDTO4.getId()))
         ;
 
         // then
