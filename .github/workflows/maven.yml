@@ -29,5 +29,5 @@ jobs:
         run: mvn -B install --file iot-core-web/pom.xml
       - name: Build Mqtt Client
         run: mvn -B install --file mqtt-client/pom.xml
-     - name: Upload coverage reports to Codecov with GitHub Action
-       uses: codecov/codecov-action@v2
+      - name: send to codecov
+        run: bash <(curl -s https://codecov.io/bash)
