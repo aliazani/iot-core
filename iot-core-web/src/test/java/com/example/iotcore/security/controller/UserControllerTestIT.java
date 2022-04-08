@@ -389,7 +389,7 @@ class UserControllerTestIT {
     void getAllUsers() throws Exception {
         // given
         // when
-        mockMvc.perform(get(ENTITY_API_URL)
+        mockMvc.perform(get(ENTITY_API_URL + "?sort=id,asc")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -426,6 +426,9 @@ class UserControllerTestIT {
                 .andExpect(jsonPath("$.[2].authorities", containsInAnyOrder("ROLE_USER", "ROLE_ADMIN")))
         ;
 
+        mockMvc.perform(get(ENTITY_API_URL + "?sort=authorities,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
         // then
     }
 

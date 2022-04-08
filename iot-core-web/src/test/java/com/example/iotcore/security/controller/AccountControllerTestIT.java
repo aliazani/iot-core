@@ -505,6 +505,30 @@ class AccountControllerTestIT {
         assertThat(user.getEmail()).isNotEqualTo(duplicateEmail.getEmail());
     }
 
+    @WithMockUser(username = "unknown", password = "admin", authorities = AuthoritiesConstants.USER)
+    @Test
+    void saveAccount_nonExistingUser() throws Exception {
+        // given
+        AdminUserDTO unknownUser = AdminUserDTO.builder()
+                .login("unknown")
+                .email("unknown@email.com")
+                .firstName("unknown-firstname")
+                .lastName("unknown-lastname")
+                .langKey("en")
+                .imageUrl("http://new-image-url")
+                .build();
+        // when
+        mockMvc.perform(post("/api/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(unknownUser))
+                )
+                .andExpect(status().isInternalServerError())
+        ;
+        // then
+        Optional<User> user = userRepository.findOneByLogin(unknownUser.getLogin());
+        assertThat(user).isNotPresent();
+    }
+
     @Test
     @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
     void changePassword() throws Exception {
