@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -32,8 +33,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
@@ -47,6 +47,7 @@ class UserControllerTestIT {
     @Container
     private static final MySQLContainer MY_SQL_CONTAINER = (MySQLContainer) new MySQLContainer("mysql:8.0.28")
             .withExposedPorts(3306);
+    private static final String ENTITY_NAME = "userManagement";
     private static User USER_1;
     private static User USER_2;
     private static User USER_3;
@@ -64,6 +65,8 @@ class UserControllerTestIT {
     MailService mailService;
     private AdminUserDTO adminUserDTO6;
     private User user6;
+    @Value("${application.clientApp.name}")
+    private String applicationName;
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {
@@ -174,11 +177,100 @@ class UserControllerTestIT {
                 .andExpect(jsonPath("$.imageUrl").value(user6.getImageUrl()))
                 .andExpect(jsonPath("$.langKey").value(user6.getLangKey()))
                 .andExpect(jsonPath("$.activated").value(user6.isActivated()))
-        ;
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.created".formatted(ENTITY_NAME)));
 
         // then
         assertThat(userRepository.existsById(user6.getId())).isTrue();
         assertThat(userRepository.findAll()).hasSize(6);
+    }
+
+    @Test
+    void createUser_existingId() throws Exception {
+        // given
+        AdminUserDTO adminUserDTO = AdminUserDTO.builder()
+                .id(adminUserDTO6.getId())
+                .login(adminUserDTO6.getLogin())
+                .firstName(adminUserDTO6.getFirstName())
+                .lastName(adminUserDTO6.getLastName())
+                .email(adminUserDTO6.getEmail())
+                .imageUrl(adminUserDTO6.getImageUrl())
+                .langKey(adminUserDTO6.getLangKey())
+                .authorities(adminUserDTO6.getAuthorities())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(adminUserDTO))
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value("userManagement"))
+                .andExpect(jsonPath("$.errorKey").value("idexists"))
+        ;
+
+        // then
+        assertThat(userRepository.existsById(user6.getId())).isFalse();
+        assertThat(userRepository.findAll()).hasSize(5);
+    }
+
+    @Test
+    void createUser_existingLogin() throws Exception {
+        // given
+        AdminUserDTO adminUserDTO = AdminUserDTO.builder()
+                .login(USER_1.getLogin())
+                .firstName(adminUserDTO6.getFirstName())
+                .lastName(adminUserDTO6.getLastName())
+                .email(adminUserDTO6.getEmail())
+                .imageUrl(adminUserDTO6.getImageUrl())
+                .langKey(adminUserDTO6.getLangKey())
+                .authorities(adminUserDTO6.getAuthorities())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(adminUserDTO))
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value("userManagement"))
+                .andExpect(jsonPath("$.errorKey").value("userexists"))
+        ;
+
+        // then
+        assertThat(userRepository.existsById(user6.getId())).isFalse();
+        assertThat(userRepository.findAll()).hasSize(5);
+    }
+
+    @Test
+    void createUser_existingEmail() throws Exception {
+        // given
+        AdminUserDTO adminUserDTO = AdminUserDTO.builder()
+                .login(adminUserDTO6.getLogin())
+                .firstName(adminUserDTO6.getFirstName())
+                .lastName(adminUserDTO6.getLastName())
+                .email(USER_1.getEmail())
+                .imageUrl(adminUserDTO6.getImageUrl())
+                .langKey(adminUserDTO6.getLangKey())
+                .authorities(adminUserDTO6.getAuthorities())
+                .build();
+
+        // when
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(adminUserDTO))
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value("userManagement"))
+                .andExpect(jsonPath("$.errorKey").value("emailexists"))
+        ;
+
+        // then
+        assertThat(userRepository.existsById(user6.getId())).isFalse();
+        assertThat(userRepository.findAll()).hasSize(5);
     }
 
     @Test
@@ -213,13 +305,84 @@ class UserControllerTestIT {
                 .andExpect(jsonPath("$.langKey").value(updatedAdminUserDTO.getLangKey()))
                 .andExpect(jsonPath("$.activated").value(updatedAdminUserDTO.isActivated()))
                 .andExpect(jsonPath("$.authorities", containsInAnyOrder("ROLE_USER")))
-        ;
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.updated".formatted(ENTITY_NAME)));
 
         // then
         User user = userRepository.findById(USER_1.getId()).get();
         assertThat(user.getFirstName()).isEqualTo(updatedAdminUserDTO.getFirstName());
         assertThat(user.getLastName()).isEqualTo(updatedAdminUserDTO.getLastName());
         assertThat(user.getAuthorities()).isEqualTo(user6.getAuthorities());
+    }
+
+    @Test
+    void updateUser_existingEmail() throws Exception {
+        // given
+        AdminUserDTO updatedAdminUserDTO = AdminUserDTO.builder()
+                .id(USER_1.getId())
+                .login(USER_1.getLogin())
+                .firstName("updatedFirstName")
+                .lastName("updatedLastName")
+                .email(USER_2.getEmail())
+                .imageUrl(USER_1.getImageUrl())
+                .activated(true)
+                .langKey(USER_1.getLangKey())
+                .authorities(Set.of("ROLE_USER"))
+                .build();
+
+        // when
+        mockMvc.perform(put(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedAdminUserDTO))
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value("userManagement"))
+                .andExpect(jsonPath("$.errorKey").value("emailexists"))
+        ;
+
+        // then
+        User user = userRepository.findById(USER_1.getId()).get();
+        assertThat(user.getFirstName()).isEqualTo(USER_1.getFirstName());
+        assertThat(user.getLastName()).isEqualTo(USER_1.getLastName());
+        assertThat(user.getFirstName()).isNotEqualTo(updatedAdminUserDTO.getFirstName());
+        assertThat(user.getLastName()).isNotEqualTo(updatedAdminUserDTO.getLastName());
+        assertThat(user.getAuthorities()).isNotEqualTo(user6.getAuthorities());
+    }
+
+    @Test
+    void updateUser_existingLogin() throws Exception {
+        // given
+        AdminUserDTO updatedAdminUserDTO = AdminUserDTO.builder()
+                .id(USER_1.getId())
+                .login(USER_2.getLogin())
+                .firstName("updatedFirstName")
+                .lastName("updatedLastName")
+                .email(USER_1.getEmail())
+                .imageUrl(USER_1.getImageUrl())
+                .activated(true)
+                .langKey(USER_1.getLangKey())
+                .authorities(Set.of("ROLE_USER"))
+                .build();
+
+        // when
+        mockMvc.perform(put(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedAdminUserDTO))
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.entityName").value("userManagement"))
+                .andExpect(jsonPath("$.errorKey").value("userexists"))
+        ;
+
+        // then
+        User user = userRepository.findById(USER_1.getId()).get();
+        assertThat(user.getFirstName()).isEqualTo(USER_1.getFirstName());
+        assertThat(user.getLastName()).isEqualTo(USER_1.getLastName());
+        assertThat(user.getFirstName()).isNotEqualTo(updatedAdminUserDTO.getFirstName());
+        assertThat(user.getLastName()).isNotEqualTo(updatedAdminUserDTO.getLastName());
+        assertThat(user.getAuthorities()).isNotEqualTo(user6.getAuthorities());
     }
 
     @Test
@@ -291,6 +454,23 @@ class UserControllerTestIT {
     }
 
     @Test
+    void getUser_nonExistingUser() throws Exception {
+        // given
+
+        // when
+        mockMvc.perform(get(ENTITY_API_URL_LOGIN, adminUserDTO6.getLogin())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.path").value(ENTITY_API_URL + "/" + adminUserDTO6.getLogin()))
+        ;
+
+        // then
+    }
+
+    @Test
     void deleteUser() throws Exception {
         // given
         // when
@@ -298,7 +478,9 @@ class UserControllerTestIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("X-" + applicationName + "-alert",
+                        "%s.deleted".formatted(ENTITY_NAME)));
 
         // then
         assertThat(userRepository.findById(USER_3.getId())).isEmpty();

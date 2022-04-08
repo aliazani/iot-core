@@ -8,6 +8,7 @@ import com.example.iotcore.security.domain.User;
 import com.example.iotcore.security.dto.AdminUserDTO;
 import com.example.iotcore.security.dto.PasswordChangeDTO;
 import com.example.iotcore.security.mapper.UserMapper;
+import com.example.iotcore.security.repository.AuthorityRepository;
 import com.example.iotcore.security.repository.UserRepository;
 import com.example.iotcore.security.service.MailService;
 import com.example.iotcore.security.service.UserService;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -27,8 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.thymeleaf.util.StringUtils;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +49,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 class AccountControllerTestIT {
     private final static String PASSWORD_ADMIN_HASH = "$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC";
+    @Container
+    private static final MySQLContainer MY_SQL_CONTAINER = (MySQLContainer) new MySQLContainer("mysql:8.0.28")
+            .withExposedPorts(3306);
     private final ManagedUserVM managedUserVM = new ManagedUserVM();
     @Autowired
     ObjectMapper objectMapper;
@@ -57,14 +64,14 @@ class AccountControllerTestIT {
     @Autowired
     UserService userService;
     @Autowired
+    AuthorityRepository authorityRepository;
+    @Autowired
     MailService mailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     private User ACTIVATED_USER;
     private User NON_ACTIVATED_USER;
     private User PASSWORD_RESET_USER;
-
-    @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = (MySQLContainer) new MySQLContainer("mysql:8.0.28")
-            .withExposedPorts(3306);
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {
@@ -135,10 +142,177 @@ class AccountControllerTestIT {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated());
 
-        // verify
+        // then
         User user = userRepository.findOneByLogin(managedUserVM.getLogin()).get();
         assertThat(user).isNotNull();
         assertThat(userRepository.findAll()).hasSize(6);
+    }
+
+    @Test
+    void registerAccount_invalidLogin() throws Exception {
+        // given
+        ManagedUserVM invalidLogin = new ManagedUserVM();
+        invalidLogin.setLogin("invalid-login(s");
+        invalidLogin.setEmail("invalid-login@email.com");
+        invalidLogin.setLangKey("en");
+        invalidLogin.setPassword("password");
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(invalidLogin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("error.validation"))
+                .andExpect(jsonPath("$.fieldErrors.[0].field").value("login"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase(invalidLogin.getEmail());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_invalidEmail() throws Exception {
+        // given
+        ManagedUserVM invalidEmail = new ManagedUserVM();
+        invalidEmail.setLogin("invalid-email");
+        invalidEmail.setEmail("invalid-email@");
+        invalidEmail.setLangKey("en");
+        invalidEmail.setPassword("password");
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(invalidEmail))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("error.validation"))
+                .andExpect(jsonPath("$.fieldErrors.[0].field").value("email"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByLogin(invalidEmail.getLogin());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_invalidPassword() throws Exception {
+        // given
+        ManagedUserVM invalidPassword = new ManagedUserVM();
+        invalidPassword.setLogin("invalid-password");
+        invalidPassword.setEmail("invalid-password@email.com");
+        invalidPassword.setLangKey("en");
+        invalidPassword.setPassword("123");
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(invalidPassword))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("error.validation"))
+                .andExpect(jsonPath("$.fieldErrors.[0].field").value("password"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase(invalidPassword.getEmail());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_nullPassword() throws Exception {
+        // given
+        ManagedUserVM nullPassword = new ManagedUserVM();
+        nullPassword.setLogin("null-password");
+        nullPassword.setEmail("null-password@email.com");
+        nullPassword.setLangKey("en");
+        nullPassword.setPassword(null);
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(nullPassword))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Incorrect password"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase(nullPassword.getEmail());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_duplicateLogin() throws Exception {
+        // given
+        ManagedUserVM duplicateLogin = new ManagedUserVM();
+        duplicateLogin.setLogin(ACTIVATED_USER.getLogin());
+        duplicateLogin.setEmail("duplicateLogin@email.com");
+        duplicateLogin.setLangKey("en");
+        duplicateLogin.setPassword("password");
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(duplicateLogin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Login name already used!"))
+                .andExpect(jsonPath("$.message").value("error.userexists"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase(duplicateLogin.getEmail());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_duplicateEmail() throws Exception {
+        // given
+        ManagedUserVM duplicateEmail = new ManagedUserVM();
+        duplicateEmail.setLogin("duplicate-email");
+        duplicateEmail.setEmail(ACTIVATED_USER.getEmail());
+        duplicateEmail.setLangKey("en");
+        duplicateEmail.setPassword("password");
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(duplicateEmail))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Email is already in use!"))
+                .andExpect(jsonPath("$.message").value("error.emailexists"))
+        ;
+
+        // then
+        Optional<User> user = userRepository.findOneByLogin(duplicateEmail.getLogin());
+        assertThat(user).isEmpty();
+    }
+
+    @Test
+    void registerAccount_adminIsIgnored() throws Exception {
+        // given
+        ManagedUserVM adminIsIgnored = new ManagedUserVM();
+        adminIsIgnored.setLogin("admin-is-ignored");
+        adminIsIgnored.setEmail("admin-is-ignored@email.com");
+        adminIsIgnored.setLangKey("en");
+        adminIsIgnored.setPassword("password");
+        adminIsIgnored.setAuthorities(Set.of("ROLE_ADMIN"));
+
+        // when
+        mockMvc.perform(post("/api/register")
+                        .content(objectMapper.writeValueAsString(adminIsIgnored))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isCreated());
+
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase(adminIsIgnored.getEmail());
+        assertThat(user).isPresent();
+        assertThat(user.get().getAuthorities()).hasSize(1)
+                .containsExactly(authorityRepository.findById(AuthoritiesConstants.USER).get());
     }
 
     @Test
@@ -149,9 +323,20 @@ class AccountControllerTestIT {
         mockMvc.perform(get("/api/activate?key={activationKey}", NON_ACTIVATED_USER.getActivationKey()))
                 .andExpect(status().isOk());
 
-        // verify
+        // then
         User user = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
         assertThat(user.isActivated()).isTrue();
+    }
+
+    @Test
+    void activateAccount_wrongActivationKey() throws Exception {
+        // given
+
+        // when
+        mockMvc.perform(get("/api/activate?key=wrongActivationKey")
+        ).andExpect(status().isInternalServerError());
+
+        // then
     }
 
     @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
@@ -169,6 +354,19 @@ class AccountControllerTestIT {
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().string(NON_ACTIVATED_USER.getLogin()));
+
+        // then
+    }
+
+    @Test
+    void isAuthenticated_nonAuthenticated() throws Exception {
+        // given
+        // when
+        mockMvc.perform(
+                        get("/api/authenticate").accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
 
         // then
     }
@@ -194,6 +392,19 @@ class AccountControllerTestIT {
         // then
     }
 
+    @WithMockUser(username = "test", password = "admin", authorities = AuthoritiesConstants.USER)
+    @Test
+    void getAccount_unknownAccount() throws Exception {
+        // given
+
+        // when
+        mockMvc
+                .perform(get("/api/account").accept(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(status().isInternalServerError());
+
+        // then
+    }
+
     @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
     @Test
     void saveAccount() throws Exception {
@@ -211,9 +422,87 @@ class AccountControllerTestIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminUserDTO))
         ).andExpect(status().isOk());
-        // verify
+        // then
         User user = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
         assertThat(user.getFirstName()).isEqualTo(adminUserDTO.getFirstName());
+    }
+
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    @Test
+    void saveAccount_invalidEmail() throws Exception {
+        // given
+        AdminUserDTO invalidEmail = AdminUserDTO.builder()
+                .login(NON_ACTIVATED_USER.getLogin())
+                .email("invalid email")
+                .firstName("newFirstName-not-activated")
+                .lastName(NON_ACTIVATED_USER.getLastName())
+                .langKey(NON_ACTIVATED_USER.getLangKey())
+                .imageUrl("http://new-image-url")
+                .build();
+        // when
+        mockMvc.perform(post("/api/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidEmail))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("error.validation"))
+                .andExpect(jsonPath("$.fieldErrors.[0].field").value("email"))
+        ;
+        // then
+        User user = userRepository.findOneByLogin(invalidEmail.getLogin()).get();
+        assertThat(user.getEmail()).isNotEqualTo(invalidEmail.getEmail());
+    }
+
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    @Test
+    void saveAccount_invalidLogin() throws Exception {
+        // given
+        AdminUserDTO invalidLogin = AdminUserDTO.builder()
+                .login("invalid login(")
+                .email(NON_ACTIVATED_USER.getEmail())
+                .firstName("newFirstName-not-activated")
+                .lastName(NON_ACTIVATED_USER.getLastName())
+                .langKey(NON_ACTIVATED_USER.getLangKey())
+                .imageUrl("http://new-image-url")
+                .build();
+        // when
+        mockMvc.perform(post("/api/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidLogin))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("error.validation"))
+                .andExpect(jsonPath("$.fieldErrors.[0].field").value("login"))
+        ;
+        // then
+        User user = userRepository.findOneByEmailIgnoreCase(invalidLogin.getEmail()).get();
+        assertThat(user.getLogin()).isNotEqualTo(invalidLogin.getLogin());
+    }
+
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    @Test
+    void saveAccount_existingEmail() throws Exception {
+        // given
+        AdminUserDTO duplicateEmail = AdminUserDTO.builder()
+                .login(NON_ACTIVATED_USER.getLogin())
+                .email(ACTIVATED_USER.getEmail())
+                .firstName("newFirstName-not-activated")
+                .lastName(NON_ACTIVATED_USER.getLastName())
+                .langKey(NON_ACTIVATED_USER.getLangKey())
+                .imageUrl("http://new-image-url")
+                .build();
+        // when
+        mockMvc.perform(post("/api/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateEmail))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Email is already in use!"))
+                .andExpect(jsonPath("$.message").value("error.emailexists"))
+        ;
+        // then
+        User user = userRepository.findOneByLogin(duplicateEmail.getLogin()).get();
+        assertThat(user.getEmail()).isNotEqualTo(duplicateEmail.getEmail());
     }
 
     @Test
@@ -237,6 +526,95 @@ class AccountControllerTestIT {
     }
 
     @Test
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    void changePassword_wrongExistingPassword() throws Exception {
+        // given
+        PasswordChangeDTO existingPassword = PasswordChangeDTO.builder()
+                .currentPassword("1" + NON_ACTIVATED_USER.getPassword())
+                .newPassword("new password")
+                .build();
+
+        // when
+        mockMvc.perform(post("/api/account/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(existingPassword))
+                )
+                .andExpect(status().isBadRequest());
+
+        // then
+        User updatedUser = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
+        assertThat(passwordEncoder.matches(existingPassword.getNewPassword(),
+                updatedUser.getPassword())).isFalse();
+        assertThat(updatedUser.getPassword()).isEqualTo(PASSWORD_ADMIN_HASH);
+    }
+
+    @Test
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    void changePassword_passwordTooSmall() throws Exception {
+        // given
+        PasswordChangeDTO tooSmallPassword = PasswordChangeDTO.builder()
+                .currentPassword(NON_ACTIVATED_USER.getPassword())
+                .newPassword("123")
+                .build();
+
+        // when
+        mockMvc.perform(post("/api/account/change-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tooSmallPassword))
+        ).andExpect(status().isBadRequest());
+
+        // then
+        User updatedUser = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
+        assertThat(passwordEncoder.matches(tooSmallPassword.getNewPassword(),
+                updatedUser.getPassword())).isFalse();
+        assertThat(updatedUser.getPassword()).isEqualTo(PASSWORD_ADMIN_HASH);
+    }
+
+    @Test
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    void changePassword_passwordTooLong() throws Exception {
+        // given
+        PasswordChangeDTO tooLongPassword = PasswordChangeDTO.builder()
+                .currentPassword(NON_ACTIVATED_USER.getPassword())
+                .newPassword(StringUtils.randomAlphanumeric(ManagedUserVM.PASSWORD_MAX_LENGTH + 1))
+                .build();
+
+        // when
+        mockMvc.perform(post("/api/account/change-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tooLongPassword))
+        ).andExpect(status().isBadRequest());
+
+        // then
+        User updatedUser = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
+        assertThat(passwordEncoder.matches(tooLongPassword.getNewPassword(),
+                updatedUser.getPassword())).isFalse();
+        assertThat(updatedUser.getPassword()).isEqualTo(PASSWORD_ADMIN_HASH);
+    }
+
+    @Test
+    @WithMockUser(username = "not-activated-user", password = "admin", authorities = AuthoritiesConstants.USER)
+    void changePassword_emptyPassword() throws Exception {
+        // given
+        PasswordChangeDTO tooLongPassword = PasswordChangeDTO.builder()
+                .currentPassword(NON_ACTIVATED_USER.getPassword())
+                .newPassword("")
+                .build();
+
+        // when
+        mockMvc.perform(post("/api/account/change-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tooLongPassword))
+        ).andExpect(status().isBadRequest());
+
+        // then
+        User updatedUser = userRepository.findOneByLogin(NON_ACTIVATED_USER.getLogin()).get();
+        assertThat(passwordEncoder.matches(tooLongPassword.getNewPassword(),
+                updatedUser.getPassword())).isFalse();
+        assertThat(updatedUser.getPassword()).isEqualTo(PASSWORD_ADMIN_HASH);
+    }
+
+    @Test
     void requestPasswordReset() throws Exception {
         // given
         // when
@@ -247,6 +625,32 @@ class AccountControllerTestIT {
         // then
         User user = userRepository.findOneByLogin(ACTIVATED_USER.getLogin()).get();
         assertThat(user.getResetKey()).isNotEmpty();
+    }
+
+    @Test
+    void requestPasswordReset_upperCaseEmail() throws Exception {
+        // given
+        // when
+        mockMvc.perform(post("/api/account/reset-password/init")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ACTIVATED_USER.getEmail().toUpperCase())
+        ).andExpect(status().isOk());
+        // then
+        User user = userRepository.findOneByLogin(ACTIVATED_USER.getLogin()).get();
+        assertThat(user.getResetKey()).isNotEmpty();
+    }
+
+    @Test
+    void requestPasswordReset_wrongEmail() throws Exception {
+        // given
+        // when
+        mockMvc.perform(post("/api/account/reset-password/init")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("wrongEmail@email.com")
+        ).andExpect(status().isOk());
+        // then
+        Optional<User> user = userRepository.findOneByEmailIgnoreCase("wrongEmail@email.com");
+        assertThat(user).isNotPresent();
     }
 
     @Test
@@ -265,5 +669,39 @@ class AccountControllerTestIT {
         User user = userRepository.findOneByLogin(PASSWORD_RESET_USER.getLogin()).get();
         assertThat(user.getResetKey()).isNull();
         assertThat(user.getPassword()).isNotEqualTo(PASSWORD_ADMIN_HASH);
+    }
+
+    @Test
+    void finishPasswordReset_passwordTooSmall() throws Exception {
+        // given
+        KeyAndPasswordVM keyAndPasswordVM = new KeyAndPasswordVM();
+        keyAndPasswordVM.setNewPassword("123");
+        keyAndPasswordVM.setKey(PASSWORD_RESET_USER.getResetKey());
+        // when
+        mockMvc.perform(post("/api/account/reset-password/finish?key={resetKey}",
+                keyAndPasswordVM.getKey())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(keyAndPasswordVM))
+        ).andExpect(status().isBadRequest());
+        // then
+        User user = userRepository.findOneByLogin(PASSWORD_RESET_USER.getLogin()).get();
+        assertThat(user.getPassword()).isEqualTo(PASSWORD_ADMIN_HASH);
+        assertThat(user.getResetKey()).isNotNull();
+    }
+
+    @Test
+    void finishPasswordReset_wrongKey() throws Exception {
+        // given
+        KeyAndPasswordVM keyAndPasswordVM = new KeyAndPasswordVM();
+        keyAndPasswordVM.setNewPassword("new password");
+        keyAndPasswordVM.setKey("wrong key");
+        // when
+        mockMvc.perform(post("/api/account/reset-password/finish?key={resetKey}",
+                        keyAndPasswordVM.getKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(keyAndPasswordVM))
+                )
+                .andExpect(status().isInternalServerError());
+        // then
     }
 }

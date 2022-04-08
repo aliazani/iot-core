@@ -413,7 +413,7 @@ class DeviceControllerTestIT extends MySqlExtension {
     void getAllDevices() throws Exception {
         // given
         // when
-        mockMvc.perform(get(ENTITY_API_URL))
+        mockMvc.perform(get(ENTITY_API_URL + "?sort=id,asc"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.[0].id").value(DEVICE_DTO_1.getId().intValue()))

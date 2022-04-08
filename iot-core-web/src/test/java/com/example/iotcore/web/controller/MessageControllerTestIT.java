@@ -429,7 +429,7 @@ class MessageControllerTestIT extends MySqlExtension {
         // given
 
         // when
-        mockMvc.perform(get(ENTITY_API_URL))
+        mockMvc.perform(get(ENTITY_API_URL + "?sort=id,asc"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.[0].id").value(MESSAGE_DTO_1.getId().intValue()))

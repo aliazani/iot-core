@@ -11,15 +11,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
+@Transactional
 @AutoConfigureMockMvc
-class UserJWTControllerTest extends MySqlExtension {
+class UserJWTControllerTestIT extends MySqlExtension {
     private static final String ENTITY_API_URL = "/api/authenticate";
 
     @Autowired
@@ -33,6 +35,24 @@ class UserJWTControllerTest extends MySqlExtension {
         LoginVM loginVM = new LoginVM();
         loginVM.setUsername("admin");
         loginVM.setPassword("admin");
+
+        mockMvc.perform(post(ENTITY_API_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginVM))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id_token").isString())
+                .andExpect(jsonPath("$.id_token").isNotEmpty())
+                .andExpect(header().string(HttpHeaders.AUTHORIZATION, not(nullValue())))
+                .andExpect(header().string(HttpHeaders.AUTHORIZATION, not(is(emptyString()))));
+    }
+
+    @Test
+    void authorize_validCredentials_rememberMe() throws Exception {
+        LoginVM loginVM = new LoginVM();
+        loginVM.setUsername("admin");
+        loginVM.setPassword("admin");
         loginVM.setRememberMe(true);
 
         mockMvc.perform(post(ENTITY_API_URL)
@@ -41,8 +61,12 @@ class UserJWTControllerTest extends MySqlExtension {
                         .content(objectMapper.writeValueAsString(loginVM))
                 )
                 .andExpect(status().isOk())
-                .andExpect(header().exists(HttpHeaders.AUTHORIZATION));
+                .andExpect(jsonPath("$.id_token").isString())
+                .andExpect(jsonPath("$.id_token").isNotEmpty())
+                .andExpect(header().string(HttpHeaders.AUTHORIZATION, not(nullValue())))
+                .andExpect(header().string(HttpHeaders.AUTHORIZATION, not(is(emptyString()))));
     }
+
 
     @Test
     void authorize_invalidCredentials() throws Exception {
@@ -56,6 +80,8 @@ class UserJWTControllerTest extends MySqlExtension {
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginVM))
                 )
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.id_token").doesNotExist())
+                .andExpect(header().doesNotExist("Authorization"));
     }
 }

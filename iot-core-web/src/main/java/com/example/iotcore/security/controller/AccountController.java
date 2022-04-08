@@ -70,7 +70,8 @@ public class AccountController {
                             description = "New user created successfully"
                     ),
                     @ApiResponse(responseCode = "400",
-                            description = "Bad request (invalid password, email is already used, login is already used)")
+                            description = "Bad request (invalid password, invalid email, invalid login," +
+                                    " email is already used, login is already used)")
             }
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,

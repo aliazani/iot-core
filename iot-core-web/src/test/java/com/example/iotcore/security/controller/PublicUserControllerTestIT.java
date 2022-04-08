@@ -13,6 +13,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class PublicUserControllerTestIT extends MySqlExtension {
     private static final UserDTO userDTO1 = new UserDTO(1L, "admin");
     private static final UserDTO userDTO2 = new UserDTO(2L, "user");
@@ -54,6 +56,26 @@ class PublicUserControllerTestIT extends MySqlExtension {
 
         // then
         assertThat(userService.getAllPublicUsers(any())).hasSize(4);
+    }
+
+    @Test
+    void getAllUsers_sortedByParameters() throws Exception {
+        mockMvc.perform(get("/api/users?sort=resetKey,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/users?sort=password,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        mockMvc
+                .perform(get("/api/users?sort=resetKey,id,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/users?sort=id,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
