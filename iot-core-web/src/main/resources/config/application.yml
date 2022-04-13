@@ -4,4 +4,4 @@ spring:
     active:
       - data
       - web
-      - dev
+      - prod

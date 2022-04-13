@@ -1,0 +1,165 @@
+{
+	"defaultACLAccess":	{
+		"publishClientSend":	false,
+		"publishClientReceive":	true,
+		"subscribe":	false,
+		"unsubscribe":	true
+	},
+	"clients":	[{
+			"username":	"cedalo",
+			"textname":	"Admin user",
+			"roles":	[{
+					"rolename":	"dynsec-admin"
+				}, {
+					"rolename":	"sys-observe"
+				}, {
+					"rolename":	"topic-observe"
+				}],
+			"password":	"649rdoEamjpXuSo9SlswGJ0nrjsBSTCvBtntKgdceJmFBJATS0MpnlGC3EDeHzc2XBcDaQPrrn3W+BCj6BLoMA==",
+			"salt":	"VQpdfnKcDaUWbl+n",
+			"iterations":	101
+		}, {
+			"username":	"sub_test",
+			"clientid":	"sub_test",
+			"textname":	"",
+			"textdescription":	"",
+			"roles":	[{
+					"rolename":	"sub_test"
+				}],
+			"password":	"zox/Qv0XtDUZkaL3CbGofUlcEQERRgvZBEz2dLNoIFXMUT8ZntEFSeWGjhJxMSPiii9hiXoK70SbFpeSlIO5Vw==",
+			"salt":	"HybfMZ9ZasBtDIwZ",
+			"iterations":	101
+		}, {
+			"username":	"test",
+			"clientid":	"test",
+			"textname":	"",
+			"textdescription":	"",
+			"roles":	[{
+					"rolename":	"test role"
+				}],
+			"password":	"MzHM9iX43BOSIpmN2pygxw7JJPqN6w8rAI6bE03eS7MBXE5wD+MXb3LevQcX2+V0RhrvsR35Rq9TH5ElBNU3Og==",
+			"salt":	"inWAAmd/vuD8cNuK",
+			"iterations":	101
+		}],
+	"groups":	[{
+			"groupname":	"testgroup",
+			"textname":	"test",
+			"textdescription":	"",
+			"roles":	[],
+			"clients":	[]
+		}],
+	"roles":	[{
+			"rolename":	"client",
+			"textdescription":	"Read/write access to the full application topic hierarchy.",
+			"acls":	[{
+					"acltype":	"publishClientSend",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"publishClientReceive",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"subscribePattern",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"unsubscribePattern",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"dynsec-admin",
+			"textname":	"",
+			"textdescription":	"Grants access to administer clients/groups/roles.",
+			"acls":	[{
+					"acltype":	"publishClientSend",
+					"topic":	"$CONTROL/dynamic-security/#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"publishClientReceive",
+					"topic":	"$CONTROL/dynamic-security/#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"subscribePattern",
+					"topic":	"$CONTROL/dynamic-security/#",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"sub_test",
+			"textname":	"sub_test",
+			"textdescription":	"",
+			"acls":	[{
+					"acltype":	"publishClientReceive",
+					"topic":	"test",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"subscribePattern",
+					"topic":	"test",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"sys-notify",
+			"textname":	"",
+			"textdescription":	"Allow bridges to publish connection state messages.",
+			"acls":	[{
+					"acltype":	"publishClientSend",
+					"topic":	"$SYS/broker/connection/+/state",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"sys-observe",
+			"textname":	"",
+			"textdescription":	"Observe the $SYS topic hierarchy.",
+			"acls":	[{
+					"acltype":	"publishClientReceive",
+					"topic":	"$SYS/#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"subscribePattern",
+					"topic":	"$SYS/#",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"test role",
+			"textname":	"test role",
+			"textdescription":	"",
+			"acls":	[{
+					"acltype":	"publishClientSend",
+					"topic":	"test",
+					"priority":	0,
+					"allow":	true
+				}]
+		}, {
+			"rolename":	"topic-observe",
+			"textdescription":	"Read only access to the full application topic hierarchy.",
+			"acls":	[{
+					"acltype":	"publishClientReceive",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"subscribePattern",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}, {
+					"acltype":	"unsubscribePattern",
+					"topic":	"#",
+					"priority":	0,
+					"allow":	true
+				}]
+		}]
+}

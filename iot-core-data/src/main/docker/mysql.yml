@@ -3,7 +3,7 @@ services:
   t_iot-mysql:
     image: mysql:8.0.28
     volumes:
-      - ~/volumes/t_iot/mysql/:/var/lib/mysql/
+      - ./volumes/t_iot/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_USER=mysql
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
