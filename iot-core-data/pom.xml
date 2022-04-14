@@ -17,7 +17,7 @@
 
     <properties>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-        <liquibase.version>4.9.0</liquibase.version>
+        <liquibase.version>4.9.1</liquibase.version>
     </properties>
 
     <dependencies>
